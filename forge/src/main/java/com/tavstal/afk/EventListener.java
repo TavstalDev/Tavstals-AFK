@@ -1,5 +1,7 @@
 package com.tavstal.afk;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
@@ -76,7 +78,7 @@ public class EventListener {
     // Left Click Entity
     @SubscribeEvent
     public void onPlayerAttackedEntity(AttackEntityEvent event) {
-        AFKEvents.OnAttackEntity(event.getEntity());  
+        AFKEvents.OnAttackEntity(event.getEntity(), event.getTarget());  
     }
 
     // Right Click Entity

@@ -55,6 +55,8 @@ public class AFKFabric implements ModInitializer {
 		// Sleeping Stopped Event
 		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
 
+		
+
 		// Register commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			// Register AFK Command
@@ -68,10 +70,7 @@ public class AFKFabric implements ModInitializer {
 		}
 
 		// Attack Entity Event
-		if (FabricConfig.DisableOnAttackEntity.get())
-		{
-			AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnAttackEntity(player));
-		}
+		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnAttackEntity(player, entity));
 
 		// Use Block Event
 		if (FabricConfig.DisableOnUseBlock.get())

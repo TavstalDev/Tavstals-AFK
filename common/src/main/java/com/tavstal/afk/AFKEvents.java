@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import com.tavstal.afk.models.LastMovement;
 import com.tavstal.afk.utils.EntityUtils;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
@@ -16,15 +17,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 public class AFKEvents {
     
     public static InteractionResult OnPlayerConnected(Player player) {
         Constants.LOG.debug("PLAYER_CONNECT was called by {}", PlayerUtils.GetName(player));
-		AFKCommon.PlayerLastMovements.put(player.getStringUUID(), LocalDateTime.now());
+		AFKCommon.PlayerLastMovements.put(player.getStringUUID(), new LastMovement(player.position(), LocalDateTime.now()));
         return InteractionResult.PASS;
     }
 
@@ -50,31 +51,43 @@ public class AFKEvents {
         return InteractionResult.PASS;
     }
 
+    public static InteractionResult OnPlayerMove(Player player, Vec3 from, Vec3 to) {
+
+        return InteractionResult.PASS;
+    }
+
     public static InteractionResult OnServerTick(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
             var uuid = player.getStringUUID();
-            if (player.isSprinting() || player.getDeltaMovement().x != 0.0F || player.getDeltaMovement().y != 0.0F || player.isFallFlying() || player.isSwimming()) {
+            LastMovement lastMove = AFKCommon.PlayerLastMovements.get(uuid);
+
+            
+            boolean movedUnwillingly = (lastMove.IsHurt && !player.isSprinting()) || player.isInPowderSnow || player.isInLava() || player.isInWater() || player.isPassenger();
+            if ((player.isSprinting() || (PlayerUtils.GetForwardSpeed(player, lastMove.LastPosition) > 0.15F || PlayerUtils.GetSidewaysSpeed(player, lastMove.LastPosition) > 0.15F) && player.isOnGround() || player.isFallFlying() || player.isSwimming()) && !movedUnwillingly) {
                 if (AFKCommon.CONFIG().DisableOnMove)
                     AFKCommon.ChangeAFKMode(player, false);
+
+                lastMove.Date = LocalDateTime.now();
             }
             else {
-                if (AFKCommon.GetAfkingPlayers().contains(uuid))
-                    continue;
-                    
-                if (player.isDeadOrDying())
-                    continue;
-
-                LocalDateTime lastMove = AFKCommon.PlayerLastMovements.get(uuid);
-                try
+                if (!(AFKCommon.GetAfkingPlayers().contains(uuid) && player.isDeadOrDying()))
                 {
-                    if (Duration.between(lastMove, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
-                        AFKCommon.ChangeAFKMode(player, true);
+                    try
+                    {
+                        if (Duration.between(lastMove.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
+                            AFKCommon.ChangeAFKMode(player, true);
+                        }
+                    } catch (Exception ex)
+                    {
+                        Constants.LOG.error(ex.getMessage());
                     }
-                } catch (Exception ex)
-                {
-                    Constants.LOG.error(ex.getMessage());
                 }
             }
+
+            lastMove.LastPosition = player.position();
+            if (lastMove.IsHurt && player.isOnGround())
+                lastMove.IsHurt = false;
+            AFKCommon.PlayerLastMovements.put(uuid, lastMove);
         }
         return InteractionResult.PASS;
     }
@@ -91,9 +104,18 @@ public class AFKEvents {
         return InteractionResult.PASS;
     }
 
-    public static InteractionResult OnAttackEntity(Player player) {
+    public static InteractionResult OnAttackEntity(Player player, Entity entity) {
         Constants.LOG.debug("ATTACK_ENTITY was called by {}", PlayerUtils.GetName(player));
-		AFKCommon.ChangeAFKMode(player, false);
+
+        if (AFKCommon.CONFIG().DisableOnAttackEntity)
+		    AFKCommon.ChangeAFKMode(player, false);
+
+        if (EntityUtils.IsPlayer(entity)) {
+            Player target = (Player)entity;
+
+            var lastMovement = AFKCommon.PlayerLastMovements.get(target.getStringUUID());
+            lastMovement.IsHurt = true;
+        }
 		return InteractionResult.PASS;
     }
 

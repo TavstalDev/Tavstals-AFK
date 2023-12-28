@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.mojang.brigadier.LiteralMessage;
+import com.tavstal.afk.models.LastMovement;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
 
@@ -39,7 +40,7 @@ public class AFKCommon {
         return AfkingPlayers;
     }
 	public static Dictionary<String, List<String>> SleepingPlayers = new Hashtable<>();
-	public static Dictionary<String, LocalDateTime> PlayerLastMovements = new Hashtable<>();
+	public static Dictionary<String, LastMovement> PlayerLastMovements = new Hashtable<>();
 	private static String _lastWorldSleepReset;
     public static String GetLastWorldSleepReset() {
         return _lastWorldSleepReset;
@@ -77,11 +78,25 @@ public class AFKCommon {
     }
 
     public static void SendChatMessage(Entity entity, String text) {
-        entity.sendSystemMessage(Literal(text));
+        var server = entity.getServer();
+        var messageComponent = Literal(text);
+        // Send Message to the server
+        server.sendSystemMessage(messageComponent);
+        // Send Message to all clients
+        for (var player : server.getPlayerList().getPlayers()) {
+            player.sendSystemMessage(messageComponent);
+        }
     }
 
     public static void SendChatMessage(Entity entity, String text, Object ... args) {
-        entity.sendSystemMessage(Literal(MessageFormat.format(text, args)));
+        var server = entity.getServer();
+        var messageComponent = Literal(MessageFormat.format(text, args));
+        // Send Message to the server
+        server.sendSystemMessage(messageComponent);
+        // Send Message to all clients
+        for (var player : server.getPlayerList().getPlayers()) {
+            player.sendSystemMessage(messageComponent);
+        }
     }
     
     public static int GetRequiredPlayersToReset(MinecraftServer server, String worldKey) {
@@ -135,7 +150,7 @@ public class AFKCommon {
 
             if (PlayerLastMovements.get(uuid) != null)
                 PlayerLastMovements.remove(uuid);
-            PlayerLastMovements.put(uuid, LocalDateTime.now());
+            PlayerLastMovements.put(uuid, new LastMovement(player.position(), LocalDateTime.now()));
         }
     }
 
