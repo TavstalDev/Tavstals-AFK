@@ -16,7 +16,7 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "com.tavstal.afk.ExampleMod"
+            "com.tavstal.afk.AFKFabric"
         ]
     },
     "mixins": [

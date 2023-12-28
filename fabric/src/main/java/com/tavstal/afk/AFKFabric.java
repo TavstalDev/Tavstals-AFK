@@ -1,11 +1,6 @@
 package com.tavstal.afk;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.tavstal.afk.commands.AFKCommand;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -19,23 +14,17 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
+import com.google.common.reflect.Reflection;
 
 public class AFKFabric implements ModInitializer {
     
 	private boolean _isInitialized = false;
-	public final CommonConfig CONFIG = new CommonConfig();
 
     @Override
     public void onInitialize() {
         
-        // Use Fabric to bootstrap the Common mod.
-        Constants.LOG.info("Hello Fabric world!");
-
+		// SERVER START TICK EVENT
 		ServerTickEvents.START_SERVER_TICK.register((server) -> {
 			if (_isInitialized)
 			{
@@ -43,86 +32,83 @@ public class AFKFabric implements ModInitializer {
 			}
 
 			_isInitialized = true;
-			AFKCommon.init(server, new CommonConfig());
+			Reflection.initialize(FabricConfig.class);
+			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
+			FabricConfig.AutoAFKInterval.get(), FabricConfig.PlayerPercentToResetTime.get(), FabricConfig.DisableOnAttackBlock.get(),
+			FabricConfig.DisableOnAttackEntity.get(), FabricConfig.DisableOnUseBlock.get(), FabricConfig.DisableOnUseEntity.get(),
+			FabricConfig.DisableOnUseItem.get(), FabricConfig.DisableOnWorldChange.get(), FabricConfig.DisableOnChatting.get(),
+			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get()));
 		});
 
-		if (CONFIG.DisableOnAttackBlock())
+		// Player Connected Event
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, client) -> AFKEvents.OnPlayerConnected(handler.player));
+
+		// Player Disconnected Event
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> AFKEvents.OnPlayerDisconnected(handler.player));
+
+		// Server Tick Event
+		ServerTickEvents.END_SERVER_TICK.register((server) -> AFKEvents.OnServerTick(server));
+
+		// Sleeping Started Event
+		EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStarts(entity));
+
+		// Sleeping Stopped Event
+		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
+
+		// Register commands
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			// Register AFK Command
+			AFKCommand.register(dispatcher);
+		});
+
+		// Attack Block Event
+		if (FabricConfig.DisableOnAttackBlock.get())
 		{
-			// Attack Block
 			AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> AFKEvents.OnAttackBlock(player));
 		}
 
-		if (CONFIG.DisableOnAttackEntity())
+		// Attack Entity Event
+		if (FabricConfig.DisableOnAttackEntity.get())
 		{
-			// Attack Entity
 			AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnAttackEntity(player));
 		}
 
-		if (CONFIG.DisableOnUseBlock())
+		// Use Block Event
+		if (FabricConfig.DisableOnUseBlock.get())
 		{
-			// Use Block
+			
 			UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> AFKEvents.OnUseBlock(player));
 		}
 
-		if (CONFIG.DisableOnUseEntity())
+		// Use Entity Event
+		if (FabricConfig.DisableOnUseEntity.get())
 		{
-			// Use Entity
 			UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnUseEntity(player));
 		}
 		
-		if (CONFIG.DisableOnUseItem()) 
+		// Use Item Event
+		if (FabricConfig.DisableOnUseItem.get()) 
 		{
-			// Use Item
 			UseItemCallback.EVENT.register((player, world, hand) -> AFKEvents.OnUseItem(player));
 		}
 
-		if (CONFIG.DisableOnWorldChange())
+		// Player World Change Event
+		if (FabricConfig.DisableOnWorldChange.get())
 		{
-			// World Change
 			ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> 
 			AFKEvents.OnPlayerChangesWorld(player, origin));
 		}
 
-		// Sleeping Start
-		EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStarts(entity));
-
-		// Sleep Stop
-		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
-
-		if (CONFIG.DisableOnRespawn())
+		// Player Respawned Event
+		if (FabricConfig.DisableOnRespawn.get())
 		{
-			// Respawn
 			ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> AFKEvents.OnPlayerRespawned(newPlayer));
 		}
 
-		// Player Connect
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, client) -> AFKEvents.OnPlayerConnected(handler.player));
-
-		// Player Disconnect
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> AFKEvents.OnPlayerDisconnected(handler.player));
-
-		// Server Tick
-		ServerTickEvents.END_SERVER_TICK.register((server) -> AFKEvents.OnServerTick(server));
-
-		// Register Chatted 
-		if (CONFIG.DisableOnChatting())
+		// Player Chatted Event
+		if (FabricConfig.DisableOnChatting.get())
 		{
 			ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AFKEvents.OnChatted(sender));
 		}
-
-		// Register commands
-		/*CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(LiteralArgumentBuilder.literal("afk")
-			.executes(context -> {
-			// For versions below 1.19, replace "Text.literal" with "new LiteralText".
-			// For versions below 1.20, remode "() ->" directly.
-			var source = context.getSource();
-			var player = context.player;
-
-			if (AFKCommon.GetAfkingPlayers().contains(player.getUuidAsString()))
-				AFKCommon.ChangeAFKMode(player, false);
-			else
-				AFKCommon.ChangeAFKMode(player, true);
-			return 1;
-		})));*/
     }
 }

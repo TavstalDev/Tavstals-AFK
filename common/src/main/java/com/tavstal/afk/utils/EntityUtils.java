@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 public class EntityUtils {
 
    public static String GetName(Entity entity) {
-      return entity.getName().toString();
+      return entity.getName().getString();
    } 
 
    public static boolean IsPlayer(Entity entity)

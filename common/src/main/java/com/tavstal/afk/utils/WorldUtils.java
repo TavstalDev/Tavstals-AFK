@@ -6,10 +6,10 @@ import net.minecraft.world.level.Level;
 public class WorldUtils {
 
    public static String GetName(ServerLevel level) {
-      return level.dimension().toString();
+      return level.dimension().location().toString();
    } 
 
    public static String GetName(Level level) {
-      return level.dimension().toString();
+      return level.dimension().location().toString();
    } 
 }

@@ -4,7 +4,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.time.LocalDateTime;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import com.tavstal.afk.utils.EntityUtils;
@@ -17,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -53,8 +53,8 @@ public class AFKEvents {
     public static InteractionResult OnServerTick(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
             var uuid = player.getStringUUID();
-            if (player.isSprinting() || player.getSpeed() != 0.0F || player.isFallFlying() || player.isSwimming()) {
-                if (CONFIG.DisableOnMove())
+            if (player.isSprinting() || player.getDeltaMovement().x != 0.0F || player.getDeltaMovement().y != 0.0F || player.isFallFlying() || player.isSwimming()) {
+                if (AFKCommon.CONFIG().DisableOnMove)
                     AFKCommon.ChangeAFKMode(player, false);
             }
             else {
@@ -67,7 +67,7 @@ public class AFKEvents {
                 LocalDateTime lastMove = AFKCommon.PlayerLastMovements.get(uuid);
                 try
                 {
-                    if (Duration.between(lastMove, LocalDateTime.now()).toSeconds() > CONFIG.AutoAFKInterval() && CONFIG.AutoAFKInterval() > 0) {
+                    if (Duration.between(lastMove, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
                         AFKCommon.ChangeAFKMode(player, true);
                     }
                 } catch (Exception ex)
@@ -116,11 +116,22 @@ public class AFKEvents {
     }
 
     public static InteractionResult OnPlayerChangesWorld(Player player, ServerLevel level) {
-        Constants.LOG.debug("WORLD_CHANGE was called by {}", PlayerUtils.GetName(player));
+        Constants.LOG.debug("WORLD_CHANGE_1 was called by {}", PlayerUtils.GetName(player));
 		AFKCommon.ChangeAFKMode(player, false);
 
 		String uuid = player.getStringUUID();
 		var worldKey = WorldUtils.GetName(level);
+		if (AFKCommon.SleepingPlayers.get(worldKey).contains(uuid)) {
+			AFKCommon.SleepingPlayers.get(worldKey).remove(uuid);
+		}
+        return InteractionResult.PASS;
+    }
+
+    public static InteractionResult OnPlayerChangesWorld(Player player, String worldKey) {
+        Constants.LOG.debug("WORLD_CHANGE_2 was called by {}", PlayerUtils.GetName(player));
+		AFKCommon.ChangeAFKMode(player, false);
+
+		String uuid = player.getStringUUID();
 		if (AFKCommon.SleepingPlayers.get(worldKey).contains(uuid)) {
 			AFKCommon.SleepingPlayers.get(worldKey).remove(uuid);
 		}

@@ -10,13 +10,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+
 import com.mojang.brigadier.LiteralMessage;
-import com.tavstal.afk.platform.Services;
+import com.tavstal.afk.utils.PlayerUtils;
+import com.tavstal.afk.utils.WorldUtils;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.server.MinecraftServer;
@@ -40,17 +44,19 @@ public class AFKCommon {
     public static String GetLastWorldSleepReset() {
         return _lastWorldSleepReset;
     }
-    private static MinecraftServer _server = null;
+    private static CommonConfig _config = null;
+    public static CommonConfig CONFIG() {
+        return _config;
+    }
 
     // The loader specific projects are able to import and use any code from the common project. This allows you to
     // write the majority of your code here and load it from your loader specific projects. This example has some
     // code that gets invoked by the entry point of the loader specific projects.
     public static void init(MinecraftServer server, CommonConfig config) {
-
-        _server = server;
-        Constants.LOG.info("Hello from Common init on {}! we are currently in a {} environment!", Services.PLATFORM.getPlatformName(), Services.PLATFORM.isDevelopmentEnvironment() ? "development" : "production");
-        if (config.EnableDebugMode)
+        _config = config;
+        if (CONFIG().EnableDebugMode) {
             SetLogLevel("DEBUG");
+        }
 
         var scoreboard = server.getScoreboard();
 		if (scoreboard.getPlayerTeam("afk") == null)
@@ -62,7 +68,7 @@ public class AFKCommon {
 		}
 
 		for (var world : server.getAllLevels()) {
-			SleepingPlayers.put(world.dimension().toString(), new ArrayList<String>());
+			SleepingPlayers.put(WorldUtils.GetName(world), new ArrayList<String>());
 		}
     }
 
@@ -83,7 +89,7 @@ public class AFKCommon {
 		int playersRequiredToResetTime = 0;
 
 		for (var serverPlayer : server.getPlayerList().getPlayers()) {
-			String playerWorld = serverPlayer.getLevel().dimension().toString();
+			String playerWorld = WorldUtils.GetName(serverPlayer.getLevel());
             Constants.LOG.debug("Player World Key: {}", playerWorld);
 			if (worldKey.equals(playerWorld)) {
 				playersRequiredToResetTime++;
@@ -100,12 +106,15 @@ public class AFKCommon {
 
     private static void SetLogLevel(String level) {
         // Set the logging level for the logger
-        ((org.apache.logging.log4j.core.Logger)Constants.LOG).setLevel(org.apache.logging.log4j.Level.getLevel(level));
+        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+        LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(Constants.LOG.getName());
+        loggerConfig.setLevel(Level.valueOf(level.toUpperCase()));
+        loggerContext.updateLoggers();
     }
 
     public static void ChangeAFKMode(Player player, boolean enable) {
         var uuid = player.getStringUUID();
-        var playerName = player.getName().getString();
+        var playerName = PlayerUtils.GetName(player);
         if (enable) {
             if (!AfkingPlayers.contains(uuid))
             {
@@ -131,7 +140,7 @@ public class AFKCommon {
     }
 
     public static void WakeUp(ServerLevel world, MinecraftServer server) {
-		var worldKey = world.dimension().toString();
+		var worldKey = WorldUtils.GetName(world);
         Constants.LOG.debug("World Key: {}", worldKey);
 		ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 		executorService.schedule(() -> {

@@ -74,8 +74,18 @@ minecraft {
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
+repositories {
+    flatDir {
+        dirs "libs"
+    }
+    maven {
+        url "https://www.cursemaven.com"
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation fg.deobf("curse.maven:supermartijn642s-config-lib-438332:${project.config_library_file}")
     compileOnly project(":common")
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 }

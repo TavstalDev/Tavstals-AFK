@@ -7,7 +7,6 @@
     "mixins": [
     ],
     "client": [
-        "MixinMinecraft"
     ],
     "server": [
     ],
@@ -15,4 +14,3 @@
         "defaultRequire": 1
     }
 }
-
