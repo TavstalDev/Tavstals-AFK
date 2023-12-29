@@ -78,13 +78,14 @@ public class AFKEvents {
             {
                 // If the player is teleported then skips x ticks
                 if (isTeleported)
+                {
                     lastMove.TeleportTTL = 5;
+                }
 
                 // If the player is pushed by smth then skips x ticks 
                 if (player.hasImpulse)
                 {
                     lastMove.ImpulseTTL = 10;
-                    player.sendSystemMessage(AFKCommon.Literal("IMPULSE"));
                 }
 
                 // CHECK IF PLAYER MOVED WILLINGLY
