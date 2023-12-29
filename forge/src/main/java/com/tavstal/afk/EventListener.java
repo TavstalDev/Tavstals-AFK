@@ -1,6 +1,10 @@
 package com.tavstal.afk;
 
+import org.jetbrains.annotations.Debug;
+
+import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
@@ -24,6 +28,12 @@ public class EventListener {
 			ForgeConfig.DisableOnAttackEntity.get(), ForgeConfig.DisableOnUseBlock.get(), ForgeConfig.DisableOnUseEntity.get(),
 			ForgeConfig.DisableOnUseItem.get(), ForgeConfig.DisableOnWorldChange.get(), ForgeConfig.DisableOnChatting.get(),
 			ForgeConfig.DisableOnMove.get(), ForgeConfig.DisableOnRespawn.get()));
+    }
+
+    @SubscribeEvent
+    public void onServerTick(ServerTickEvent event) {
+        Constants.LOG.debug("server tick");
+        AFKEvents.OnServerTick(event.getServer());
     }
 
     @SubscribeEvent

@@ -22,27 +22,26 @@ public class ForgeConfig {
     public static final Supplier<Boolean> DisableOnRespawn;
 
     static {
-        IConfigBuilder builder = ConfigBuilders.newTomlConfig(Constants.MOD_ID, "config", false);
-
-        builder.push("General");
-        EnableDebugMode = builder.define("EnableDebugMode", false);
-        Prefix = builder.define("Prefix", "§6[AFK]", 0, 32);
-        Suffix = builder.define("Suffix", "", 0, 32);
-        AutoAFKInterval = builder.define("AutoAFKInterval", 600, 60, 3600);
-        PlayerPercentToResetTime = builder.define("PlayerPercentToResetTime", 100, 0, 100);
+        IConfigBuilder builder = ConfigBuilders.newTomlConfig(Constants.MOD_ID, "config", false).dontSync();
+        
+        builder.onlyOnServer().push("General");
+        EnableDebugMode = builder.onlyOnServer().define("EnableDebugMode", false);
+        Prefix = builder.onlyOnServer().define("Prefix", "§6[AFK]", 0, 32);
+        Suffix = builder.onlyOnServer().define("Suffix", "", 0, 32);
+        AutoAFKInterval = builder.onlyOnServer().define("AutoAFKInterval", 600, 60, 3600);
+        PlayerPercentToResetTime = builder.onlyOnServer().define("PlayerPercentToResetTime", 100, 0, 100);
         builder.pop();
-        builder.push("AFK Disabling");
-        DisableOnAttackBlock = builder.define("DisableOnAttackBlock", true);
-        DisableOnAttackEntity = builder.define("DisableOnAttackEntity", true);
-        DisableOnUseBlock = builder.define("DisableOnUseBlock", false);
-        DisableOnUseEntity = builder.define("DisableOnUseEntity", false);
-        DisableOnUseItem = builder.define("DisableOnUseItem", true);
-        DisableOnWorldChange = builder.define("DisableOnWorldChange", true);
-        DisableOnChatting = builder.define("DisableOnChatting", true);
-        DisableOnMove = builder.define("DisableOnMove", true);
-        DisableOnRespawn = builder.define("DisableOnRespawn", true);
+        builder.onlyOnServer().push("Disabling AFK");
+        DisableOnAttackBlock = builder.onlyOnServer().define("DisableOnAttackBlock", true);
+        DisableOnAttackEntity = builder.onlyOnServer().define("DisableOnAttackEntity", true);
+        DisableOnUseBlock = builder.onlyOnServer().define("DisableOnUseBlock", false);
+        DisableOnUseEntity = builder.onlyOnServer().define("DisableOnUseEntity", false);
+        DisableOnUseItem = builder.onlyOnServer().define("DisableOnUseItem", true);
+        DisableOnWorldChange = builder.onlyOnServer().define("DisableOnWorldChange", true);
+        DisableOnChatting = builder.onlyOnServer().define("DisableOnChatting", true);
+        DisableOnMove = builder.onlyOnServer().define("DisableOnMove", true);
+        DisableOnRespawn = builder.onlyOnServer().define("DisableOnRespawn", true);
         builder.pop();
-
         builder.build();
     }
 }

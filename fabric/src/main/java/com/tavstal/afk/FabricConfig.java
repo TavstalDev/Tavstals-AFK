@@ -30,7 +30,7 @@ public class FabricConfig {
         AutoAFKInterval = builder.define("AutoAFKInterval", 600, 60, 3600);
         PlayerPercentToResetTime = builder.define("PlayerPercentToResetTime", 100, 0, 100);
         builder.pop();
-        builder.push("AFK Disabling");
+        builder.push("Disabling AFK");
         DisableOnAttackBlock = builder.define("DisableOnAttackBlock", true);
         DisableOnAttackEntity = builder.define("DisableOnAttackEntity", true);
         DisableOnUseBlock = builder.define("DisableOnUseBlock", false);

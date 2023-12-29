@@ -13,7 +13,7 @@
     },
     "license": "${license}",
     "icon": "assets/${mod_id}/${mod_id}.png",
-    "environment": "*",
+    "environment": "${mod_environment}",
     "entrypoints": {
         "main": [
             "com.tavstal.afk.AFKFabric"

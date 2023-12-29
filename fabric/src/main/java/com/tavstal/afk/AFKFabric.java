@@ -1,9 +1,8 @@
 package com.tavstal.afk;
 
-import com.tavstal.afk.commands.AFKCommand;
+import com.tavstal.afk.platform.FabricPlatformHelper;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -25,6 +24,13 @@ public class AFKFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         
+		// CHECK IF THE MOD IS LOADED ON CLIENT
+		var helper = new FabricPlatformHelper();
+		if (helper.isClientSide()) {
+			Constants.LOG.error("{} should be only loaded on the server.", Constants.MOD_NAME);
+			return;
+		}
+
 		// SERVER START TICK EVENT
 		ServerTickEvents.START_SERVER_TICK.register((server) -> {
 			if (_isInitialized)
@@ -55,12 +61,6 @@ public class AFKFabric implements ModInitializer {
 
 		// Sleeping Stopped Event
 		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
-
-		// Register commands
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			// Register AFK Command
-			AFKCommand.register(dispatcher);
-		});
 
 		// Attack Block Event
 		if (FabricConfig.DisableOnAttackBlock.get())

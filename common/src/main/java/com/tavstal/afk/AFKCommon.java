@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.mojang.brigadier.LiteralMessage;
+import com.tavstal.afk.commands.AFKCommand;
 import com.tavstal.afk.models.LastMovement;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
@@ -59,6 +60,11 @@ public class AFKCommon {
             SetLogLevel("DEBUG");
         }
 
+        // Register Commands
+        var dispatcher = server.getCommands().getDispatcher();
+        AFKCommand.register(dispatcher);
+
+        // Create scoreboard team
         var scoreboard = server.getScoreboard();
 		if (scoreboard.getPlayerTeam("afk") == null)
 		{
