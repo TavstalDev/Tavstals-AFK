@@ -61,7 +61,9 @@ public class EventListener {
     public void onPlayerSleepStarted(PlayerSleepInBedEvent event) {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.schedule(() -> {
-			AFKEvents.OnEntitySleepStarts(event.getEntity());
+            if (!event.isCanceled()) {
+			    AFKEvents.OnEntitySleepStarts(event.getEntity());
+            }
 		}, 5, TimeUnit.MILLISECONDS);
 		executorService.shutdown();
         
