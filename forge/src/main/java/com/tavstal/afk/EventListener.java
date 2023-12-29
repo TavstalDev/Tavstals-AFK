@@ -1,5 +1,10 @@
 package com.tavstal.afk;
 
+import java.util.concurrent.TimeUnit;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.jetbrains.annotations.Debug;
 
 import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
@@ -48,12 +53,18 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerChatted(ServerChatEvent event) {
-        AFKEvents.OnChatted(event.getPlayer());
+        if (ForgeConfig.DisableOnChatting.get())
+            AFKEvents.OnChatted(event.getPlayer());
     }
 
     @SubscribeEvent
     public void onPlayerSleepStarted(PlayerSleepInBedEvent event) {
-        AFKEvents.OnEntitySleepStarts(event.getEntity());
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.schedule(() -> {
+			AFKEvents.OnEntitySleepStarts(event.getEntity());
+		}, 5, TimeUnit.MILLISECONDS);
+		executorService.shutdown();
+        
     }
 
     @SubscribeEvent
@@ -63,47 +74,55 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerChangeWorld(PlayerChangedDimensionEvent event) {
-        AFKEvents.OnPlayerChangesWorld(event.getEntity(), event.getTo().toString());
+        if (ForgeConfig.DisableOnWorldChange.get())
+            AFKEvents.OnPlayerChangesWorld(event.getEntity(), event.getTo().toString());
     }
 
     @SubscribeEvent
     public void onPlayerRespawned(PlayerRespawnEvent event) {
-        AFKEvents.OnPlayerRespawned(event.getEntity());
+        if (ForgeConfig.DisableOnRespawn.get())
+            AFKEvents.OnPlayerRespawned(event.getEntity());
     }
 
     // Left Click Block
     @SubscribeEvent
     public void onPlayerAttackedBlock(LeftClickBlock event) {
-        AFKEvents.OnAttackBlock(event.getEntity());
+        if (ForgeConfig.DisableOnAttackBlock.get())
+            AFKEvents.OnAttackBlock(event.getEntity());
     }
 
     // Right Click Block
     @SubscribeEvent
     public void onPlayerUsedBlock(RightClickBlock event) {
-        AFKEvents.OnUseBlock(event.getEntity());
+        if (ForgeConfig.DisableOnUseBlock.get())
+            AFKEvents.OnUseBlock(event.getEntity());
     }
 
     // Left Click Entity
     @SubscribeEvent
     public void onPlayerAttackedEntity(AttackEntityEvent event) {
-        AFKEvents.OnAttackEntity(event.getEntity(), event.getTarget());  
+        if (ForgeConfig.DisableOnAttackEntity.get())
+            AFKEvents.OnAttackEntity(event.getEntity(), event.getTarget());  
     }
 
     // Right Click Entity
     @SubscribeEvent
     public void onPlayerUsedEntity(EntityInteract event) {
-        AFKEvents.OnUseEntity(event.getEntity());
+        if (ForgeConfig.DisableOnUseEntity.get())
+            AFKEvents.OnUseEntity(event.getEntity());
     }
 
     // Left Click Empty
     @SubscribeEvent
     public void onPlayerUsedItem(LeftClickEmpty event) {
-        AFKEvents.OnUseItem(event.getEntity());
+        if (ForgeConfig.DisableOnUseItem.get())
+            AFKEvents.OnUseItem(event.getEntity());
     }
 
     // Right Click Item
     @SubscribeEvent
     public void onPlayerUsedItem(RightClickItem event) {
-        AFKEvents.OnUseItem(event.getEntity());
+        if (ForgeConfig.DisableOnUseItem.get())
+            AFKEvents.OnUseItem(event.getEntity());
     }
 }
