@@ -19,13 +19,12 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 
 public class AFKEvents {
     
     public static InteractionResult OnPlayerConnected(Player player) {
         Constants.LOG.debug("PLAYER_CONNECT was called by {}", PlayerUtils.GetName(player));
-		AFKCommon.PlayerLastMovements.put(player.getStringUUID(), new LastMovement(player.position(), LocalDateTime.now()));
+		AFKCommon.PlayerLastMovements.put(player.getStringUUID(), new LastMovement(player.position(), player.blockPosition(), player.yHeadRot, LocalDateTime.now()));
         return InteractionResult.PASS;
     }
 
@@ -51,43 +50,73 @@ public class AFKEvents {
         return InteractionResult.PASS;
     }
 
-    public static InteractionResult OnPlayerMove(Player player, Vec3 from, Vec3 to) {
-
-        return InteractionResult.PASS;
-    }
-
     public static InteractionResult OnServerTick(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
             var uuid = player.getStringUUID();
+            var combatTracker = player.getCombatTracker();
             LastMovement lastMove = AFKCommon.PlayerLastMovements.get(uuid);
-
             
-            boolean movedUnwillingly = (lastMove.IsHurt && !player.isSprinting()) || player.isInPowderSnow || player.isInLava() || player.isInWater() || player.isPassenger();
-            if ((player.isSprinting() || (PlayerUtils.GetForwardSpeed(player, lastMove.LastPosition) > 0.15F || PlayerUtils.GetSidewaysSpeed(player, lastMove.LastPosition) > 0.15F) && player.isOnGround() || player.isFallFlying() || player.isSwimming()) && !movedUnwillingly) {
-                if (AFKCommon.CONFIG().DisableOnMove)
-                    AFKCommon.ChangeAFKMode(player, false);
+            // NOTES
+            // HorizontalCollisions do not activate
+            // isPushedByFluid is always true
 
-                lastMove.Date = LocalDateTime.now();
+            boolean isTeleported = MathUtils.Distance(player.blockPosition(), lastMove.LastBlockPosition) > 3;
+            boolean isChangedBlockPosition = lastMove.LastBlockPosition.getX() != player.blockPosition().getX() || lastMove.LastBlockPosition.getY() != player.blockPosition().getY() || lastMove.LastBlockPosition.getZ() != player.blockPosition().getZ();
+            
+            boolean isInMovingVehicle = player.isPassenger();
+            if (player.getVehicle() != null) {
+                var vehicle = player.getVehicle();
+                isInMovingVehicle = vehicle.getControllingPassenger() != player || vehicle.hasImpulse;
             }
-            else {
-                if (!(AFKCommon.GetAfkingPlayers().contains(uuid) && player.isDeadOrDying()))
+            
+            boolean isMovedUnwillingly = player.isInPowderSnow || player.isChangingDimension() || player.isInWater() || player.isInLava() || isInMovingVehicle || player.isFallFlying() || player.isHurt() || combatTracker.isTakingDamage() || isTeleported;
+            // Should disable AFK no matter what because player had input
+            boolean shouldDisableAFK = player.isSprinting() || player.isShiftKeyDown() || player.isUsingItem() || player.yHeadRot != lastMove.HeadRotation;
+
+            // CHECK IF CHANGED POSITION
+            if (isChangedBlockPosition)
+            {
+                // If the player is teleported then skips x ticks
+                if (isTeleported)
+                    lastMove.TeleportTTL = 5;
+
+                // If the player is pushed by smth then skips x ticks 
+                if (player.hasImpulse)
                 {
-                    try
-                    {
-                        if (Duration.between(lastMove.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
-                            AFKCommon.ChangeAFKMode(player, true);
-                        }
-                    } catch (Exception ex)
-                    {
-                        Constants.LOG.error(ex.getMessage());
+                    lastMove.ImpulseTTL = 10;
+                    player.sendSystemMessage(AFKCommon.Literal("IMPULSE"));
+                }
+
+                // CHECK IF PLAYER MOVED WILLINGLY
+                if ((!isMovedUnwillingly || shouldDisableAFK) && lastMove.TeleportTTL == 0 && lastMove.ImpulseTTL == 0)
+                {
+                    if (AFKCommon.CONFIG().DisableOnMove)
+                        AFKCommon.ChangeAFKMode(player, false);
+
+                    lastMove.Date = LocalDateTime.now();
+                }
+
+                if (lastMove.TeleportTTL > 0)
+                    lastMove.TeleportTTL -= 1;
+
+                if (lastMove.ImpulseTTL > 0)
+                    lastMove.ImpulseTTL -= 1;
+
+                lastMove.LastPosition = player.position();
+                lastMove.HeadRotation = player.yHeadRot;
+                lastMove.LastBlockPosition = player.blockPosition();
+                AFKCommon.PlayerLastMovements.put(uuid, lastMove);
+            }
+            else
+            {
+                // AUTO AFK Check
+                if (!(AFKCommon.GetAfkingPlayers().contains(uuid) || combatTracker.isInCombat()))
+                {
+                    if (Duration.between(lastMove.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
+                        AFKCommon.ChangeAFKMode(player, true);
                     }
                 }
             }
-
-            lastMove.LastPosition = player.position();
-            if (lastMove.IsHurt && player.isOnGround())
-                lastMove.IsHurt = false;
-            AFKCommon.PlayerLastMovements.put(uuid, lastMove);
         }
         return InteractionResult.PASS;
     }

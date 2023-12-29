@@ -23,16 +23,6 @@ public class PlayerUtils {
       return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaZ, 2));
    }
 
-   public static double GetForwardSpeed(Player player, Vec3 oldPos) {
-      var deltaX = player.getX() - oldPos.x;
-      return Math.sqrt(Math.pow(deltaX, 2));
-   }
-
-   public static double GetSidewaysSpeed(Player player, Vec3 oldPos) {
-      var deltaZ = player.getZ() - oldPos.z;
-      return Math.sqrt(Math.pow(deltaZ, 2));
-   }
-
    public static double distanceToSqr(Player player, Vec3 vec3) {
         double d = player.getX() - vec3.x;
         double e = player.getY() - vec3.y;

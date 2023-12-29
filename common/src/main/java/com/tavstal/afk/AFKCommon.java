@@ -130,6 +130,7 @@ public class AFKCommon {
     public static void ChangeAFKMode(Player player, boolean enable) {
         var uuid = player.getStringUUID();
         var playerName = PlayerUtils.GetName(player);
+        var lastMove = PlayerLastMovements.get(uuid);
         if (enable) {
             if (!AfkingPlayers.contains(uuid))
             {
@@ -137,6 +138,17 @@ public class AFKCommon {
                 SendChatMessage(player, "§6{0} is now AFK.", playerName);
                 var scoreboard = player.getServer().getScoreboard();
                 scoreboard.addPlayerToTeam(playerName, scoreboard.getPlayerTeam("afk"));
+
+                if (lastMove == null)
+                    lastMove = new LastMovement(player.position(), player.blockPosition(), player.yHeadRot, LocalDateTime.now());
+                else
+                {
+                    lastMove.LastPosition = player.position();
+                    lastMove.HeadRotation = player.yHeadRot;
+                    lastMove.LastBlockPosition = player.blockPosition();
+                    lastMove.Date = LocalDateTime.now();
+                }
+                AFKCommon.PlayerLastMovements.put(uuid, lastMove);
             }
         }
         else
@@ -148,9 +160,9 @@ public class AFKCommon {
                 scoreboard.removePlayerFromTeam(playerName, scoreboard.getPlayerTeam("afk"));
             }
 
-            if (PlayerLastMovements.get(uuid) != null)
+            if (lastMove != null)
                 PlayerLastMovements.remove(uuid);
-            PlayerLastMovements.put(uuid, new LastMovement(player.position(), LocalDateTime.now()));
+            PlayerLastMovements.put(uuid, new LastMovement(player.position(), player.blockPosition(), player.yHeadRot, LocalDateTime.now()));
         }
     }
 

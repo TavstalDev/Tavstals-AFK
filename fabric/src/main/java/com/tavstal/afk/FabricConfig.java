@@ -23,12 +23,14 @@ public class FabricConfig {
 
     static {
         IConfigBuilder builder = ConfigBuilders.newTomlConfig(Constants.MOD_ID, "config", false);
-
+        builder.push("General");
         EnableDebugMode = builder.define("EnableDebugMode", false);
         Prefix = builder.define("Prefix", "§6[AFK]", 0, 32);
         Suffix = builder.define("Suffix", "", 0, 32);
         AutoAFKInterval = builder.define("AutoAFKInterval", 600, 60, 3600);
         PlayerPercentToResetTime = builder.define("PlayerPercentToResetTime", 100, 0, 100);
+        builder.pop();
+        builder.push("AFK Disabling");
         DisableOnAttackBlock = builder.define("DisableOnAttackBlock", true);
         DisableOnAttackEntity = builder.define("DisableOnAttackEntity", true);
         DisableOnUseBlock = builder.define("DisableOnUseBlock", false);
@@ -38,6 +40,7 @@ public class FabricConfig {
         DisableOnChatting = builder.define("DisableOnChatting", true);
         DisableOnMove = builder.define("DisableOnMove", true);
         DisableOnRespawn = builder.define("DisableOnRespawn", true);
+        builder.pop();
 
         builder.build();
     }

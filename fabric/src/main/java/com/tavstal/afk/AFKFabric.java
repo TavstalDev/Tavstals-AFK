@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+
 import com.google.common.reflect.Reflection;
 
 public class AFKFabric implements ModInitializer {
@@ -54,8 +55,6 @@ public class AFKFabric implements ModInitializer {
 
 		// Sleeping Stopped Event
 		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
-
-		
 
 		// Register commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
