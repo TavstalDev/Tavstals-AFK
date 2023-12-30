@@ -5,10 +5,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.jetbrains.annotations.Debug;
-
-import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
-import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -39,7 +35,6 @@ public class EventListener {
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent event) {
-        Constants.LOG.debug("server tick");
         AFKEvents.OnServerTick(event.getServer());
     }
 
@@ -63,7 +58,7 @@ public class EventListener {
     public void onPlayerSleepStarted(PlayerSleepInBedEvent event) {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.schedule(() -> {
-            if (!event.isCanceled() && event.getResult() != Result.DENY) {
+            if (!event.isCanceled() && event.getEntity().isSleeping()) {
 			    AFKEvents.OnEntitySleepStarts(event.getEntity());
             }
 		}, 5, TimeUnit.MILLISECONDS);
