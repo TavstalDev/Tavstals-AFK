@@ -8,6 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jetbrains.annotations.Debug;
 
 import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
+import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -24,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBloc
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
 
 public class EventListener {
     @SubscribeEvent
@@ -61,7 +63,7 @@ public class EventListener {
     public void onPlayerSleepStarted(PlayerSleepInBedEvent event) {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.schedule(() -> {
-            if (!event.isCanceled()) {
+            if (!event.isCanceled() && event.getResult() != Result.DENY) {
 			    AFKEvents.OnEntitySleepStarts(event.getEntity());
             }
 		}, 5, TimeUnit.MILLISECONDS);
