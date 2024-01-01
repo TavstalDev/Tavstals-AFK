@@ -41,6 +41,13 @@ public class AFKEvents {
             AFKCommon.SendChatMessage(player, "§c{0} stopped sleeping. {1} player(s) needed.", 
             PlayerUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 		}
+
+        int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
+		if (requiredPlayersToReset <= 0)
+		{
+            AFKCommon.SendChatMessage(player, "§aSleeping through this night."); 
+			AFKCommon.WakeUp(server.getLevel(player.level.dimension()), server);
+		}
         return InteractionResult.PASS;
     }
 
