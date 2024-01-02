@@ -1,6 +1,7 @@
 package com.tavstal.afk.utils;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerUtils {
@@ -8,6 +9,10 @@ public class PlayerUtils {
    public static String GetName(Player player) {
       return player.getName().getString();
    } 
+
+   public static Level GetLevel(Player player) {
+      return player.level;
+   }
 
    public static double GetSpeed(Player player, Vec3 oldPos) {
       var deltaX = player.getX() - oldPos.x;
