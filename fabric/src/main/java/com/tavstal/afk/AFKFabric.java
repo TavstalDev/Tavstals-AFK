@@ -74,7 +74,6 @@ public class AFKFabric implements ModInitializer {
 		// Use Block Event
 		if (FabricConfig.DisableOnUseBlock.get())
 		{
-			
 			UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> AFKEvents.OnUseBlock(player));
 		}
 

@@ -1,10 +1,7 @@
 package com.tavstal.afk;
 
-import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,19 +12,18 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.tavstal.afk.commands.AFKCommand;
-import com.tavstal.afk.models.LastMovement;
+import com.tavstal.afk.models.PlayerData;
+import com.tavstal.afk.utils.EntityUtils;
+import com.tavstal.afk.utils.ModUtils;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 // This class is part of the common project meaning it is shared between all supported loaders. Code written here can only
@@ -36,24 +32,30 @@ import net.minecraft.world.entity.player.Player;
 // however it will be compatible with all supported mod loaders.
 public class AFKCommon {
 
-    private static List<String> AfkingPlayers = new ArrayList<String>();
-    public static List<String> GetAfkingPlayers() {
-        return AfkingPlayers;
-    }
-	public static Dictionary<String, List<String>> SleepingPlayers = new Hashtable<>();
-	public static Dictionary<String, LastMovement> PlayerLastMovements = new Hashtable<>();
-	private static String _lastWorldSleepReset;
+    private static String _lastWorldSleepReset;
     public static String GetLastWorldSleepReset() {
         return _lastWorldSleepReset;
     }
+    //#region Player Data
+	private static Dictionary<String, PlayerData> _playerDataList = new Hashtable<>();
+    public static Dictionary<String, PlayerData>  GetPlayerDataList() {
+        return _playerDataList;
+    }
+    public static void PutPlayerData(String uuid, PlayerData newData) {
+        _playerDataList.put(uuid, newData);
+    }
+    public static PlayerData GetPlayerData(String uuid) {
+        return _playerDataList.get(uuid);
+    }
+    public static void RemovePlayerData(String uuid) {
+        _playerDataList.remove(uuid);
+    }
+    ////#endregion
     private static CommonConfig _config = null;
     public static CommonConfig CONFIG() {
         return _config;
     }
 
-    // The loader specific projects are able to import and use any code from the common project. This allows you to
-    // write the majority of your code here and load it from your loader specific projects. This example has some
-    // code that gets invoked by the entry point of the loader specific projects.
     public static void init(MinecraftServer server, CommonConfig config) {
         _config = config;
         if (CONFIG().EnableDebugMode) {
@@ -69,42 +71,20 @@ public class AFKCommon {
 		if (scoreboard.getPlayerTeam("afk") == null)
 		{
 			PlayerTeam team = scoreboard.addPlayerTeam("afk");
-            team.setPlayerPrefix(Literal(config.Prefix));
-            team.setPlayerSuffix(Literal(config.Suffix));
+            team.setPlayerPrefix(ModUtils.Literal(config.Prefix));
+            team.setPlayerSuffix(ModUtils.Literal(config.Suffix));
             team.setColor(ChatFormatting.WHITE);
 		}
-
-		for (var world : server.getAllLevels()) {
-			SleepingPlayers.put(WorldUtils.GetName(world), new ArrayList<String>());
-		}
     }
 
-    public static Component Literal(String text) {
-        return net.minecraft.network.chat.ComponentUtils.fromMessage(new LiteralMessage(text));
+    private static void SetLogLevel(String level) {
+        // Set the logging level for the logger
+        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+        LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(Constants.LOG.getName());
+        loggerConfig.setLevel(Level.valueOf(level.toUpperCase()));
+        loggerContext.updateLoggers();
     }
 
-    public static void SendChatMessage(Entity entity, String text) {
-        var server = entity.getServer();
-        var messageComponent = Literal(text);
-        // Send Message to the server
-        server.sendSystemMessage(messageComponent);
-        // Send Message to all clients
-        for (var player : server.getPlayerList().getPlayers()) {
-            player.sendSystemMessage(messageComponent);
-        }
-    }
-
-    public static void SendChatMessage(Entity entity, String text, Object ... args) {
-        var server = entity.getServer();
-        var messageComponent = Literal(MessageFormat.format(text, args));
-        // Send Message to the server
-        server.sendSystemMessage(messageComponent);
-        // Send Message to all clients
-        for (var player : server.getPlayerList().getPlayers()) {
-            player.sendSystemMessage(messageComponent);
-        }
-    }
-    
     public static int GetRequiredPlayersToReset(MinecraftServer server, String worldKey) {
 		int playersSleeping = 0;
 		int playersRequiredToResetTime = 0;
@@ -116,7 +96,7 @@ public class AFKCommon {
 				playersRequiredToResetTime++;
 			}
 
-			if ((serverPlayer.isSleeping() && worldKey.equals(playerWorld)) || AfkingPlayers.contains(serverPlayer.getStringUUID())) {
+			if ((serverPlayer.isSleeping() && worldKey.equals(playerWorld)) || PlayerUtils.IsAFK(serverPlayer.getStringUUID())) {
 				playersSleeping++;
 			}
 		}
@@ -125,50 +105,50 @@ public class AFKCommon {
 		return (int)value; 
 	}
 
-    private static void SetLogLevel(String level) {
-        // Set the logging level for the logger
-        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-        LoggerConfig loggerConfig = loggerContext.getConfiguration().getLoggerConfig(Constants.LOG.getName());
-        loggerConfig.setLevel(Level.valueOf(level.toUpperCase()));
-        loggerContext.updateLoggers();
-    }
-
     public static void ChangeAFKMode(Player player, boolean enable) {
         var uuid = player.getStringUUID();
-        var playerName = PlayerUtils.GetName(player);
-        var lastMove = PlayerLastMovements.get(uuid);
+        var playerName = EntityUtils.GetName(player);
+        var data = GetPlayerData(uuid);
         if (enable) {
-            if (!AfkingPlayers.contains(uuid))
+            if (!data.IsAFK)
             {
-                AfkingPlayers.add(uuid);
-                SendChatMessage(player, "§6{0} is now AFK.", playerName);
-                var scoreboard = player.getServer().getScoreboard();
-                scoreboard.addPlayerToTeam(playerName, scoreboard.getPlayerTeam("afk"));
-
-                if (lastMove == null)
-                    lastMove = new LastMovement(player.position(), player.blockPosition(), player.yHeadRot, LocalDateTime.now());
-                else
-                {
-                    lastMove.LastPosition = player.position();
-                    lastMove.HeadRotation = player.yHeadRot;
-                    lastMove.LastBlockPosition = player.blockPosition();
-                    lastMove.Date = LocalDateTime.now();
+                var server = player.getServer();
+                if (server != null) {
+                    var scoreboard = server.getScoreboard();
+                    scoreboard.addPlayerToTeam(playerName, scoreboard.getPlayerTeam("afk"));
                 }
-                AFKCommon.PlayerLastMovements.put(uuid, lastMove);
+                else
+                    Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
+                ModUtils.SendChatMessage(player, "§6{0} is now AFK.", playerName);
+                data.IsAFK = true;
             }
+
+            data.LastPosition = EntityUtils.GetPosition(player);
+            data.LastBlockPosition = EntityUtils.GetBlockPosition(player);
+            data.HeadRotation = player.yHeadRot;
+            data.Date = LocalDateTime.now();
+            PutPlayerData(uuid, data);
         }
         else
         {
-            if (AfkingPlayers.contains(uuid)) {
-                SendChatMessage(player, "§6{0} is no longer AFK.", playerName);
-                AfkingPlayers.remove(uuid);
-                var scoreboard = player.getServer().getScoreboard();
-                scoreboard.removePlayerFromTeam(playerName, scoreboard.getPlayerTeam("afk"));
+            if (data.IsAFK) {
+                var server = player.getServer();
+                if (server != null) {
+                    var scoreboard = server.getScoreboard();
+                    scoreboard.removePlayerFromTeam(playerName, scoreboard.getPlayerTeam("afk"));
+                }
+                else
+                    Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
+
+                ModUtils.SendChatMessage(player, "§6{0} is no longer AFK.", playerName);
+                data.IsAFK = false;
             }
 
-            if (lastMove != null)
-                PlayerLastMovements.remove(uuid);
-            PlayerLastMovements.put(uuid, new LastMovement(player.position(), player.blockPosition(), player.yHeadRot, LocalDateTime.now()));
+            data.LastPosition = EntityUtils.GetPosition(player);
+            data.LastBlockPosition = EntityUtils.GetBlockPosition(player);
+            data.HeadRotation = player.yHeadRot;
+            data.Date = LocalDateTime.now();
+            PutPlayerData(uuid, data);
         }
     }
 
@@ -181,7 +161,6 @@ public class AFKCommon {
 			if (GetRequiredPlayersToReset(server, worldKey) <= 0)
 			{
 				_lastWorldSleepReset = worldKey;
-
 				if (world.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
 					var currentDayTime = world.getDayTime();
 					world.setDayTime(currentDayTime + 24000L - currentDayTime % 24000L);
@@ -200,8 +179,6 @@ public class AFKCommon {
 				}
 			}
 		}, 3, TimeUnit.SECONDS);
-
-		SleepingPlayers.get(worldKey).clear();
 
 		executorService.schedule(() -> {
 			if (_lastWorldSleepReset.equals(worldKey))

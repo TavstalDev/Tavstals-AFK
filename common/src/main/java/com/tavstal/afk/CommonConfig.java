@@ -18,9 +18,10 @@ public class CommonConfig {
     public boolean DisableOnRespawn;
     
     public CommonConfig(boolean enableDebugMode, String prefix, String suffix, int autoAFKInterval,
-            int playerPercentToResetTime, boolean disableOnAttackBlock, boolean disableOnAttackEntity,
-            boolean disableOnUseBlock, boolean disableOnUseEntity, boolean disableOnUseItem,
-            boolean disableOnWorldChange, boolean disableOnChatting, boolean disableOnMove, boolean disableOnRespawn) {
+        int playerPercentToResetTime, boolean disableOnAttackBlock, boolean disableOnAttackEntity,
+        boolean disableOnUseBlock, boolean disableOnUseEntity, boolean disableOnUseItem,
+        boolean disableOnWorldChange, boolean disableOnChatting, boolean disableOnMove, boolean disableOnRespawn) 
+    {
         EnableDebugMode = enableDebugMode;
         Prefix = prefix;
         Suffix = suffix;

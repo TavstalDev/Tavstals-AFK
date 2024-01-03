@@ -1,36 +1,24 @@
 package com.tavstal.afk.utils;
 
+import com.tavstal.afk.AFKCommon;
+
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 public class PlayerUtils {
 
-   public static String GetName(Player player) {
-      return player.getName().getString();
-   } 
-
-   public static Level GetLevel(Player player) {
-      return player.level;
+   public static boolean IsAFK(String uuid) {
+      var data = AFKCommon.GetPlayerData(uuid);
+      if (data == null)
+         return false;
+      
+      return data.IsAFK;
    }
 
-   public static double GetSpeed(Player player, Vec3 oldPos) {
-      var deltaX = player.getX() - oldPos.x;
-      var deltaY = player.getY() - oldPos.y;
-      var deltaZ = player.getZ() - oldPos.z;
-
-      return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2) + Math.pow(deltaZ, 2));
+   public static boolean IsSleeping(Player player) {
+      var data = AFKCommon.GetPlayerData(player.getStringUUID());
+      if (data == null)
+         return false;
+      
+      return data.IsAFK || player.isSleeping();
    }
-
-   public static double GetWalkSpeed(Player player, Vec3 oldPos) {
-      var deltaX = player.getX() - oldPos.x;
-      var deltaZ = player.getZ() - oldPos.z;
-      return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaZ, 2));
-   }
-
-   public static double distanceToSqr(Player player, Vec3 vec3) {
-        double d = player.getX() - vec3.x;
-        double e = player.getY() - vec3.y;
-        return d * d + e * e;
-    }
 }
