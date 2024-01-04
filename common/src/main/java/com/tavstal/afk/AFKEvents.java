@@ -66,7 +66,7 @@ public class AFKEvents {
     public static InteractionResult OnServerTick(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
             var uuid = player.getStringUUID();
-            var combatTracker = player.getCombatTracker();
+            //var combatTracker = player.getCombatTracker();
             PlayerData data = AFKCommon.GetPlayerData(uuid);
             
             // NOTES
@@ -82,7 +82,7 @@ public class AFKEvents {
                 isInMovingVehicle = playerVehicle.getControllingPassenger() != player || playerVehicle.hasImpulse;
             }
             
-            boolean isMovedUnwillingly = player.isInPowderSnow || player.isChangingDimension() || player.isInWater() || player.isInLava() || isInMovingVehicle || player.isFallFlying() || player.isHurt() || combatTracker.isTakingDamage() || isTeleported;
+            boolean isMovedUnwillingly = player.isInPowderSnow || player.isChangingDimension() || player.isInWater() || player.isInLava() || isInMovingVehicle || player.isFallFlying() || player.isHurt() || isTeleported;
             // Should disable AFK no matter what because player had input
             boolean shouldDisableAFK = player.isSprinting() || player.isShiftKeyDown() || player.isUsingItem() || player.yHeadRot != data.HeadRotation;
 
@@ -124,7 +124,7 @@ public class AFKEvents {
             else
             {
                 // AUTO AFK Check
-                if (!(PlayerUtils.IsAFK(uuid) || combatTracker.isInCombat()))
+                if (!(PlayerUtils.IsAFK(uuid) || player.isHurt()))
                 {
                     if (Duration.between(data.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
                         AFKCommon.ChangeAFKMode(player, true);
