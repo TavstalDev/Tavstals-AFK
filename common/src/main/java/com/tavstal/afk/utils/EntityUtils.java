@@ -29,7 +29,11 @@ public class EntityUtils {
    }
 
    public static ServerLevel GetServerLevel(Entity entity) {
-      return entity.getServer().getLevel(GetLevel(entity).dimension());
+      var server = entity.getServer();
+      if (server == null)
+         return null;
+
+      return server.getLevel(GetLevel(entity).dimension());
    }
 
    public static Vec3 GetPosition(Entity entity) {
