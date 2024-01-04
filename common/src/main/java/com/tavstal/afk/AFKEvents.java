@@ -42,7 +42,7 @@ public class AFKEvents {
             return InteractionResult.PASS;
         }
 
-		var worldKey = WorldUtils.GetName(player.level);
+		var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(player));
 		if (player.isSleeping()) {
             ModUtils.SendChatMessage(player, "§c{0} stopped sleeping. {1} player(s) needed.", 
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
@@ -196,7 +196,7 @@ public class AFKEvents {
                 return InteractionResult.PASS;
             }
 
-			var worldKey = WorldUtils.GetName(entity.getLevel());
+			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 
             int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
             ModUtils.SendChatMessage(entity, "§e{0} is sleeping. {1} player(s) needed.", 
@@ -222,7 +222,7 @@ public class AFKEvents {
                 return InteractionResult.PASS;
             }
 
-			var worldKey = WorldUtils.GetName(entity.getLevel());
+			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 			if (!worldKey.equals(AFKCommon.GetLastWorldSleepReset()))
 			{
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();

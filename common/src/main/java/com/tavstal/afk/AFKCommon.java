@@ -90,7 +90,7 @@ public class AFKCommon {
 		int playersRequiredToResetTime = 0;
 
 		for (var serverPlayer : server.getPlayerList().getPlayers()) {
-			String playerWorld = WorldUtils.GetName(serverPlayer.getLevel());
+			String playerWorld = WorldUtils.GetName(EntityUtils.GetLevel(serverPlayer));
             Constants.LOG.debug("Player World Key: {}", playerWorld);
 			if (worldKey.equals(playerWorld)) {
 				playersRequiredToResetTime++;
