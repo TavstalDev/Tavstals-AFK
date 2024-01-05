@@ -21,6 +21,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBloc
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 public class EventListener {
     @SubscribeEvent
@@ -35,7 +36,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent event) {
-        AFKEvents.OnServerTick(event.getServer());
+        AFKEvents.OnServerTick(ServerLifecycleHooks.getCurrentServer());
     }
 
     @SubscribeEvent

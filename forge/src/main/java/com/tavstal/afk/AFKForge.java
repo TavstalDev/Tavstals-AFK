@@ -9,7 +9,6 @@ import net.minecraftforge.fml.common.Mod;
 public class AFKForge {
     
     public AFKForge() {
-    
         var helper = new ForgePlatformHelper();
         if (helper.isClientSide()) {
 			Constants.LOG.error("{} should be only loaded on the server.", Constants.MOD_NAME);

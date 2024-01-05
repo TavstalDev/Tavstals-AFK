@@ -1,5 +1,6 @@
 package com.tavstal.afk;
 
+import com.tavstal.afk.callbacks.ChatMessageSentCallback;
 import com.tavstal.afk.platform.FabricPlatformHelper;
 
 import net.fabricmc.api.ModInitializer;
@@ -7,7 +8,6 @@ import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -106,8 +106,7 @@ public class AFKFabric implements ModInitializer {
 		// Player Chatted Event
 		if (FabricConfig.DisableOnChatting.get())
 		{
-			
-			ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AFKEvents.OnChatted(sender));
+			ChatMessageSentCallback.EVENT.register((player, message, component) -> AFKEvents.OnChatted(player));
 		}
     }
 }

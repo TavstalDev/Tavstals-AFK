@@ -58,11 +58,11 @@ public class ModUtils {
 
       var messageComponent = Literal(text);
       // Send Message to the server
-      server.sendSystemMessage(messageComponent);
+      server.sendMessage(messageComponent, null);
       // Send Message to all clients
       for (var player : server.getPlayerList().getPlayers()) {
          if (WorldUtils.GetName(EntityUtils.GetLevel(player)).equals(worldKey))
-            player.sendSystemMessage(messageComponent);
+            player.sendMessage(messageComponent, player.getUUID());
       }
    }
 
@@ -76,11 +76,11 @@ public class ModUtils {
 
       var messageComponent = Literal(MessageFormat.format(text, args));
       // Send Message to the server
-      server.sendSystemMessage(messageComponent);
+      server.sendMessage(messageComponent, null);
       // Send Message to all clients
       for (var player : server.getPlayerList().getPlayers()) {
          if (WorldUtils.GetName(EntityUtils.GetLevel(player)).equals(worldKey))
-            player.sendSystemMessage(messageComponent);
+            player.sendMessage(messageComponent, player.getUUID());
       }
    }
 }
