@@ -91,7 +91,6 @@ public class AFKCommon {
 
 		for (var serverPlayer : server.getPlayerList().getPlayers()) {
 			String playerWorld = WorldUtils.GetName(EntityUtils.GetLevel(serverPlayer));
-            Constants.LOG.debug("Player World Key: {}", playerWorld);
 			if (worldKey.equals(playerWorld)) {
 				playersRequiredToResetTime++;
 			}
@@ -119,7 +118,7 @@ public class AFKCommon {
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
-                ModUtils.SendChatMessage(player, "§6{0} is now AFK.", playerName);
+                ModUtils.BroadcastMessage(player, AFKCommon.CONFIG().AFKOnMessage, playerName);
                 data.IsAFK = true;
             }
 
@@ -140,7 +139,7 @@ public class AFKCommon {
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
 
-                ModUtils.SendChatMessage(player, "§6{0} is no longer AFK.", playerName);
+                ModUtils.BroadcastMessage(player, AFKCommon.CONFIG().AFKOffMessage, playerName);
                 data.IsAFK = false;
             }
 

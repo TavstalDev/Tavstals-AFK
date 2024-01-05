@@ -25,11 +25,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class EventListener {
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
-        AFKCommon.init(event.getServer(), new CommonConfig(ForgeConfig.EnableDebugMode.get(), ForgeConfig.Prefix.get(), ForgeConfig.Suffix.get(),
+        AFKCommon.init(event.getServer(), new CommonConfig(ForgeConfig.EnableDebugMode.get(), ForgeConfig.ShouldBroadcastMessages.get(), ForgeConfig.Prefix.get(), ForgeConfig.Suffix.get(),
 			ForgeConfig.AutoAFKInterval.get(), ForgeConfig.PlayerPercentToResetTime.get(), ForgeConfig.DisableOnAttackBlock.get(),
 			ForgeConfig.DisableOnAttackEntity.get(), ForgeConfig.DisableOnUseBlock.get(), ForgeConfig.DisableOnUseEntity.get(),
 			ForgeConfig.DisableOnUseItem.get(), ForgeConfig.DisableOnWorldChange.get(), ForgeConfig.DisableOnChatting.get(),
-			ForgeConfig.DisableOnMove.get(), ForgeConfig.DisableOnRespawn.get()));
+			ForgeConfig.DisableOnMove.get(), ForgeConfig.DisableOnRespawn.get(),
+            ForgeConfig.AFKOnMessage.get(), ForgeConfig.AFKOffMessage.get(), ForgeConfig.SleepStartMessage.get(), ForgeConfig.SleepStopMessage.get(), ForgeConfig.SleepResetMessage.get()));
     }
 
     @SubscribeEvent
