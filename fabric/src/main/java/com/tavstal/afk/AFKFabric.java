@@ -40,11 +40,12 @@ public class AFKFabric implements ModInitializer {
 
 			_isInitialized = true;
 			Reflection.initialize(FabricConfig.class);
-			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
+			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.ShouldBroadcastMessages.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
 			FabricConfig.AutoAFKInterval.get(), FabricConfig.PlayerPercentToResetTime.get(), FabricConfig.DisableOnAttackBlock.get(),
 			FabricConfig.DisableOnAttackEntity.get(), FabricConfig.DisableOnUseBlock.get(), FabricConfig.DisableOnUseEntity.get(),
 			FabricConfig.DisableOnUseItem.get(), FabricConfig.DisableOnWorldChange.get(), FabricConfig.DisableOnChatting.get(),
-			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get()));
+			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get(),
+			FabricConfig.AFKOnMessage.get(), FabricConfig.AFKOffMessage.get(), FabricConfig.SleepStartMessage.get(), FabricConfig.SleepStopMessage.get(), FabricConfig.SleepResetMessage.get()));
 		});
 
 		// Player Connected Event
