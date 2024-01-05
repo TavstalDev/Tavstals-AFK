@@ -9,6 +9,7 @@
     "client": [
     ],
     "server": [
+      "ChatMixin"
     ],
     "injectors": {
       "defaultRequire": 1
