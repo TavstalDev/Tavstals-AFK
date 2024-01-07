@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -19,13 +20,15 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickEmpty;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
-import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
 
 public class EventListener {
+    private static MinecraftServer _serverInstance;
+
     @SubscribeEvent
-    public void onServerStarted(ServerStartedEvent event) {
+    public void onServerStarted(FMLServerAboutToStartEvent event) {
+        _serverInstance = event.getServer();
         AFKCommon.init(event.getServer(), new CommonConfig(ForgeConfig.EnableDebugMode.get(), ForgeConfig.ShouldBroadcastMessages.get(), ForgeConfig.Prefix.get(), ForgeConfig.Suffix.get(),
 			ForgeConfig.AutoAFKInterval.get(), ForgeConfig.PlayerPercentToResetTime.get(), ForgeConfig.DisableOnAttackBlock.get(),
 			ForgeConfig.DisableOnAttackEntity.get(), ForgeConfig.DisableOnUseBlock.get(), ForgeConfig.DisableOnUseEntity.get(),
@@ -36,7 +39,8 @@ public class EventListener {
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent event) {
-        AFKEvents.OnServerTick(ServerLifecycleHooks.getCurrentServer());
+        if (_serverInstance != null)
+            AFKEvents.OnServerTick(_serverInstance);
     }
 
     @SubscribeEvent
