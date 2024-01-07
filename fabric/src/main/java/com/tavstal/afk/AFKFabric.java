@@ -1,5 +1,6 @@
 package com.tavstal.afk;
 
+import com.tavstal.afk.callbacks.ChatMessageSentCallback;
 import com.tavstal.afk.platform.FabricPlatformHelper;
 
 import net.fabricmc.api.ModInitializer;
@@ -12,7 +13,6 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import com.google.common.reflect.Reflection;
@@ -40,11 +40,12 @@ public class AFKFabric implements ModInitializer {
 
 			_isInitialized = true;
 			Reflection.initialize(FabricConfig.class);
-			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
+			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.ShouldBroadcastMessages.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
 			FabricConfig.AutoAFKInterval.get(), FabricConfig.PlayerPercentToResetTime.get(), FabricConfig.DisableOnAttackBlock.get(),
 			FabricConfig.DisableOnAttackEntity.get(), FabricConfig.DisableOnUseBlock.get(), FabricConfig.DisableOnUseEntity.get(),
 			FabricConfig.DisableOnUseItem.get(), FabricConfig.DisableOnWorldChange.get(), FabricConfig.DisableOnChatting.get(),
-			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get()));
+			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get(),
+			FabricConfig.AFKOnMessage.get(), FabricConfig.AFKOffMessage.get(), FabricConfig.SleepStartMessage.get(), FabricConfig.SleepStopMessage.get(), FabricConfig.SleepResetMessage.get()));
 		});
 
 		// Player Connected Event
@@ -105,7 +106,7 @@ public class AFKFabric implements ModInitializer {
 		// Player Chatted Event
 		if (FabricConfig.DisableOnChatting.get())
 		{
-			ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AFKEvents.OnChatted(sender));
+			ChatMessageSentCallback.EVENT.register((player, message, component) -> AFKEvents.OnChatted(player));
 		}
     }
 }

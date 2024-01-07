@@ -44,14 +44,14 @@ public class AFKEvents {
 
 		var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(player));
 		if (player.isSleeping()) {
-            ModUtils.SendChatMessage(player, "§c{0} stopped sleeping. {1} player(s) needed.", 
+            ModUtils.BroadcastMessageByWorld(player, AFKCommon.CONFIG().SleepStopMessage, worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 		}
 
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
 		if (requiredPlayersToReset <= 0)
 		{
-            ModUtils.SendChatMessage(player, "§aSleeping through this night."); 
+            ModUtils.BroadcastMessageByWorld(player, AFKCommon.CONFIG().SleepResetMessage, worldKey); 
 			AFKCommon.WakeUp(EntityUtils.GetServerLevel(player), server);
 		}
         return InteractionResult.PASS;
@@ -66,7 +66,7 @@ public class AFKEvents {
     public static InteractionResult OnServerTick(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
             var uuid = player.getStringUUID();
-            var combatTracker = player.getCombatTracker();
+            //var combatTracker = player.getCombatTracker();
             PlayerData data = AFKCommon.GetPlayerData(uuid);
             
             // NOTES
@@ -82,7 +82,7 @@ public class AFKEvents {
                 isInMovingVehicle = playerVehicle.getControllingPassenger() != player || playerVehicle.hasImpulse;
             }
             
-            boolean isMovedUnwillingly = player.isInPowderSnow || player.isChangingDimension() || player.isInWater() || player.isInLava() || isInMovingVehicle || player.isFallFlying() || player.isHurt() || combatTracker.isTakingDamage() || isTeleported;
+            boolean isMovedUnwillingly = player.isInPowderSnow || player.isChangingDimension() || player.isInWater() || player.isInLava() || isInMovingVehicle || player.isFallFlying() || player.isHurt() || isTeleported;
             // Should disable AFK no matter what because player had input
             boolean shouldDisableAFK = player.isSprinting() || player.isShiftKeyDown() || player.isUsingItem() || player.yHeadRot != data.HeadRotation;
 
@@ -124,7 +124,7 @@ public class AFKEvents {
             else
             {
                 // AUTO AFK Check
-                if (!(PlayerUtils.IsAFK(uuid) || combatTracker.isInCombat()))
+                if (!(PlayerUtils.IsAFK(uuid) || player.isHurt()))
                 {
                     if (Duration.between(data.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
                         AFKCommon.ChangeAFKMode(player, true);
@@ -199,12 +199,12 @@ public class AFKEvents {
 			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 
             int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
-            ModUtils.SendChatMessage(entity, "§e{0} is sleeping. {1} player(s) needed.", 
+            ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepStartMessage, worldKey, 
             EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
 
 			if (requiredPlayersToReset <= 0)
 			{
-                ModUtils.SendChatMessage(entity, "§aSleeping through this night."); 
+                ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepResetMessage, worldKey); 
 				AFKCommon.WakeUp(EntityUtils.GetServerLevel(entity), server);
 			}
         return InteractionResult.PASS;
@@ -227,7 +227,7 @@ public class AFKEvents {
 			{
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.schedule(() -> {
-                    ModUtils.SendChatMessage(entity, "§c{0} stopped sleeping. {1} player(s) needed.", EntityUtils.GetName(entity),
+                    ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepStopMessage, worldKey, EntityUtils.GetName(entity),
                     MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 				}, 10, TimeUnit.MILLISECONDS);
 			}
