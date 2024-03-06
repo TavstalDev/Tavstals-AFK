@@ -25,12 +25,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class EventListener {
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
-        AFKCommon.init(event.getServer(), new CommonConfig(ForgeConfig.EnableDebugMode.get(), ForgeConfig.ShouldBroadcastMessages.get(), ForgeConfig.Prefix.get(), ForgeConfig.Suffix.get(),
-			ForgeConfig.AutoAFKInterval.get(), ForgeConfig.PlayerPercentToResetTime.get(), ForgeConfig.DisableOnAttackBlock.get(),
-			ForgeConfig.DisableOnAttackEntity.get(), ForgeConfig.DisableOnUseBlock.get(), ForgeConfig.DisableOnUseEntity.get(),
-			ForgeConfig.DisableOnUseItem.get(), ForgeConfig.DisableOnWorldChange.get(), ForgeConfig.DisableOnChatting.get(),
-			ForgeConfig.DisableOnMove.get(), ForgeConfig.DisableOnRespawn.get(),
-            ForgeConfig.AFKOnMessage.get(), ForgeConfig.AFKOffMessage.get(), ForgeConfig.SleepStartMessage.get(), ForgeConfig.SleepStopMessage.get(), ForgeConfig.SleepResetMessage.get()));
+        AFKCommon.init(event.getServer());
     }
 
     @SubscribeEvent
@@ -50,7 +45,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerChatted(ServerChatEvent event) {
-        if (ForgeConfig.DisableOnChatting.get())
+        if (AFKConfig.DisableOnChatting.get())
             AFKEvents.OnChatted(event.getPlayer());
     }
 
@@ -73,55 +68,55 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerChangeWorld(PlayerChangedDimensionEvent event) {
-        if (ForgeConfig.DisableOnWorldChange.get())
+        if (AFKConfig.DisableOnWorldChange.get())
             AFKEvents.OnPlayerChangesWorld(event.getEntity(), event.getTo().toString());
     }
 
     @SubscribeEvent
     public void onPlayerRespawned(PlayerRespawnEvent event) {
-        if (ForgeConfig.DisableOnRespawn.get())
+        if (AFKConfig.DisableOnRespawn.get())
             AFKEvents.OnPlayerRespawned(event.getEntity());
     }
 
     // Left Click Block
     @SubscribeEvent
     public void onPlayerAttackedBlock(LeftClickBlock event) {
-        if (ForgeConfig.DisableOnAttackBlock.get())
+        if (AFKConfig.DisableOnAttackBlock.get())
             AFKEvents.OnAttackBlock(event.getEntity());
     }
 
     // Right Click Block
     @SubscribeEvent
     public void onPlayerUsedBlock(RightClickBlock event) {
-        if (ForgeConfig.DisableOnUseBlock.get())
+        if (AFKConfig.DisableOnUseBlock.get())
             AFKEvents.OnUseBlock(event.getEntity());
     }
 
     // Left Click Entity
     @SubscribeEvent
     public void onPlayerAttackedEntity(AttackEntityEvent event) {
-        if (ForgeConfig.DisableOnAttackEntity.get())
+        if (AFKConfig.DisableOnAttackEntity.get())
             AFKEvents.OnAttackEntity(event.getEntity(), event.getTarget());  
     }
 
     // Right Click Entity
     @SubscribeEvent
     public void onPlayerUsedEntity(EntityInteract event) {
-        if (ForgeConfig.DisableOnUseEntity.get())
+        if (AFKConfig.DisableOnUseEntity.get())
             AFKEvents.OnUseEntity(event.getEntity());
     }
 
     // Left Click Empty
     @SubscribeEvent
     public void onPlayerUsedItem(LeftClickEmpty event) {
-        if (ForgeConfig.DisableOnUseItem.get())
+        if (AFKConfig.DisableOnUseItem.get())
             AFKEvents.OnUseItem(event.getEntity());
     }
 
     // Right Click Item
     @SubscribeEvent
     public void onPlayerUsedItem(RightClickItem event) {
-        if (ForgeConfig.DisableOnUseItem.get())
+        if (AFKConfig.DisableOnUseItem.get())
             AFKEvents.OnUseItem(event.getEntity());
     }
 }

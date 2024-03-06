@@ -44,14 +44,14 @@ public class AFKEvents {
 
 		var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(player));
 		if (player.isSleeping()) {
-            ModUtils.BroadcastMessageByWorld(player, AFKCommon.CONFIG().SleepStopMessage, worldKey,
+            ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepStopMessage.get(), worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 		}
 
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
 		if (requiredPlayersToReset <= 0)
 		{
-            ModUtils.BroadcastMessageByWorld(player, AFKCommon.CONFIG().SleepResetMessage, worldKey); 
+            ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepResetMessage.get(), worldKey); 
 			AFKCommon.WakeUp(EntityUtils.GetServerLevel(player), server);
 		}
         return InteractionResult.PASS;
@@ -104,7 +104,7 @@ public class AFKEvents {
                 // CHECK IF PLAYER MOVED WILLINGLY
                 if ((!isMovedUnwillingly || shouldDisableAFK) && data.TeleportTTL == 0 && data.ImpulseTTL == 0)
                 {
-                    if (AFKCommon.CONFIG().DisableOnMove)
+                    if (AFKConfig.DisableOnMove.get())
                         AFKCommon.ChangeAFKMode(player, false);
 
                     data.Date = LocalDateTime.now();
@@ -126,7 +126,7 @@ public class AFKEvents {
                 // AUTO AFK Check
                 if (!(PlayerUtils.IsAFK(uuid) || player.isHurt()))
                 {
-                    if (Duration.between(data.Date, LocalDateTime.now()).toSeconds() > AFKCommon.CONFIG().AutoAFKInterval && AFKCommon.CONFIG().AutoAFKInterval > 0) {
+                    if (Duration.between(data.Date, LocalDateTime.now()).toSeconds() > AFKConfig.AutoAFKInterval.get() && AFKConfig.AutoAFKInterval.get() > 0) {
                         AFKCommon.ChangeAFKMode(player, true);
                     }
                 }
@@ -149,7 +149,7 @@ public class AFKEvents {
 
     public static InteractionResult OnAttackEntity(Player player, Entity entity) {
         Constants.LOG.debug("ATTACK_ENTITY was called by {}", EntityUtils.GetName(player));
-        if (AFKCommon.CONFIG().DisableOnAttackEntity)
+        if (AFKConfig.DisableOnAttackEntity.get())
 		    AFKCommon.ChangeAFKMode(player, false);
 		return InteractionResult.PASS;
     }
@@ -199,12 +199,12 @@ public class AFKEvents {
 			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 
             int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
-            ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepStartMessage, worldKey, 
+            ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepStartMessage.get(), worldKey, 
             EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
 
 			if (requiredPlayersToReset <= 0)
 			{
-                ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepResetMessage, worldKey); 
+                ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepResetMessage.get(), worldKey); 
 				AFKCommon.WakeUp(EntityUtils.GetServerLevel(entity), server);
 			}
         return InteractionResult.PASS;
@@ -227,7 +227,7 @@ public class AFKEvents {
 			{
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.schedule(() -> {
-                    ModUtils.BroadcastMessageByWorld(entity, AFKCommon.CONFIG().SleepStopMessage, worldKey, EntityUtils.GetName(entity),
+                    ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepStopMessage.get(), worldKey, EntityUtils.GetName(entity),
                     MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 				}, 10, TimeUnit.MILLISECONDS);
 			}

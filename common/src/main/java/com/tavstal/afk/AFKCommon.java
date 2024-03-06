@@ -12,6 +12,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
+import com.google.common.reflect.Reflection;
 import com.tavstal.afk.commands.AFKCommand;
 import com.tavstal.afk.models.PlayerData;
 import com.tavstal.afk.utils.EntityUtils;
@@ -51,14 +52,10 @@ public class AFKCommon {
         _playerDataList.remove(uuid);
     }
     ////#endregion
-    private static CommonConfig _config = null;
-    public static CommonConfig CONFIG() {
-        return _config;
-    }
 
-    public static void init(MinecraftServer server, CommonConfig config) {
-        _config = config;
-        if (CONFIG().EnableDebugMode) {
+    public static void init(MinecraftServer server) {
+        Reflection.initialize(AFKConfig.class);
+        if (AFKConfig.EnableDebugMode.get()) {
             SetLogLevel("DEBUG");
         }
 
@@ -71,10 +68,18 @@ public class AFKCommon {
 		if (scoreboard.getPlayerTeam("afk") == null)
 		{
 			PlayerTeam team = scoreboard.addPlayerTeam("afk");
-            team.setPlayerPrefix(ModUtils.Literal(config.Prefix));
-            team.setPlayerSuffix(ModUtils.Literal(config.Suffix));
+            team.setPlayerPrefix(ModUtils.Literal(AFKConfig.Prefix.get() + " "));
+            team.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.Suffix.get()));
             team.setColor(ChatFormatting.WHITE);
 		}
+
+        if (scoreboard.getPlayerTeam("sleep") == null) 
+        {
+            PlayerTeam team = scoreboard.addPlayerTeam("sleep");
+            team.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
+            team.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
+            team.setColor(ChatFormatting.WHITE);
+        }
     }
 
     private static void SetLogLevel(String level) {
@@ -118,7 +123,7 @@ public class AFKCommon {
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
-                ModUtils.BroadcastMessage(player, AFKCommon.CONFIG().AFKOnMessage, playerName);
+                ModUtils.BroadcastMessage(player, AFKConfig.AFKOnMessage.get(), playerName);
                 data.IsAFK = true;
             }
 
@@ -139,7 +144,7 @@ public class AFKCommon {
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
 
-                ModUtils.BroadcastMessage(player, AFKCommon.CONFIG().AFKOffMessage, playerName);
+                ModUtils.BroadcastMessage(player, AFKConfig.AFKOffMessage.get(), playerName);
                 data.IsAFK = false;
             }
 

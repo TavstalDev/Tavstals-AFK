@@ -15,8 +15,6 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
-import com.google.common.reflect.Reflection;
-
 public class AFKFabric implements ModInitializer {
     
 	private boolean _isInitialized = false;
@@ -39,13 +37,8 @@ public class AFKFabric implements ModInitializer {
 			}
 
 			_isInitialized = true;
-			Reflection.initialize(FabricConfig.class);
-			AFKCommon.init(server, new CommonConfig(FabricConfig.EnableDebugMode.get(), FabricConfig.ShouldBroadcastMessages.get(), FabricConfig.Prefix.get(), FabricConfig.Suffix.get(),
-			FabricConfig.AutoAFKInterval.get(), FabricConfig.PlayerPercentToResetTime.get(), FabricConfig.DisableOnAttackBlock.get(),
-			FabricConfig.DisableOnAttackEntity.get(), FabricConfig.DisableOnUseBlock.get(), FabricConfig.DisableOnUseEntity.get(),
-			FabricConfig.DisableOnUseItem.get(), FabricConfig.DisableOnWorldChange.get(), FabricConfig.DisableOnChatting.get(),
-			FabricConfig.DisableOnMove.get(), FabricConfig.DisableOnRespawn.get(),
-			FabricConfig.AFKOnMessage.get(), FabricConfig.AFKOffMessage.get(), FabricConfig.SleepStartMessage.get(), FabricConfig.SleepStopMessage.get(), FabricConfig.SleepResetMessage.get()));
+			
+			AFKCommon.init(server);
 		});
 
 		// Player Connected Event
@@ -64,7 +57,7 @@ public class AFKFabric implements ModInitializer {
 		EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> AFKEvents.OnEntitySleepStopped(entity));
 
 		// Attack Block Event
-		if (FabricConfig.DisableOnAttackBlock.get())
+		if (AFKConfig.DisableOnAttackBlock.get())
 		{
 			AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> AFKEvents.OnAttackBlock(player));
 		}
@@ -73,38 +66,38 @@ public class AFKFabric implements ModInitializer {
 		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnAttackEntity(player, entity));
 
 		// Use Block Event
-		if (FabricConfig.DisableOnUseBlock.get())
+		if (AFKConfig.DisableOnUseBlock.get())
 		{
 			UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> AFKEvents.OnUseBlock(player));
 		}
 
 		// Use Entity Event
-		if (FabricConfig.DisableOnUseEntity.get())
+		if (AFKConfig.DisableOnUseEntity.get())
 		{
 			UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> AFKEvents.OnUseEntity(player));
 		}
 		
 		// Use Item Event
-		if (FabricConfig.DisableOnUseItem.get()) 
+		if (AFKConfig.DisableOnUseItem.get()) 
 		{
 			UseItemCallback.EVENT.register((player, world, hand) -> AFKEvents.OnUseItem(player));
 		}
 
 		// Player World Change Event
-		if (FabricConfig.DisableOnWorldChange.get())
+		if (AFKConfig.DisableOnWorldChange.get())
 		{
 			ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> 
 			AFKEvents.OnPlayerChangesWorld(player, origin));
 		}
 
 		// Player Respawned Event
-		if (FabricConfig.DisableOnRespawn.get())
+		if (AFKConfig.DisableOnRespawn.get())
 		{
 			ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> AFKEvents.OnPlayerRespawned(newPlayer));
 		}
 
 		// Player Chatted Event
-		if (FabricConfig.DisableOnChatting.get())
+		if (AFKConfig.DisableOnChatting.get())
 		{
 			ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AFKEvents.OnChatted(sender));
 		}

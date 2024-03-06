@@ -4,13 +4,17 @@ import com.supermartijn642.configlib.api.ConfigBuilders;
 import com.supermartijn642.configlib.api.IConfigBuilder;
 import java.util.function.Supplier;
 
-public class ForgeConfig {
+public class AFKConfig {
     public static final Supplier<Boolean> EnableDebugMode;
     public static final Supplier<Boolean> ShouldBroadcastMessages;
     public static final Supplier<String> Prefix;
     public static final Supplier<String> Suffix;
     public static final Supplier<Integer> AutoAFKInterval;
     public static final Supplier<Integer> PlayerPercentToResetTime;
+
+    public static final Supplier<Boolean> EnableSleepTab;
+    public static final Supplier<String> SleepPrefix;
+    public static final Supplier<String> SleepSuffix;
 
     public static final Supplier<Boolean> DisableOnAttackBlock;
     public static final Supplier<Boolean> DisableOnAttackEntity;
@@ -39,6 +43,9 @@ public class ForgeConfig {
         Suffix = builder.onlyOnServer().define("Suffix", "", 0, 32);
         AutoAFKInterval = builder.onlyOnServer().define("AutoAFKInterval", 600, 60, 3600);
         PlayerPercentToResetTime = builder.onlyOnServer().define("PlayerPercentToResetTime", 100, 0, 100);
+        EnableSleepTab = builder.onlyOnServer().define("EnableSleepTab", true);
+        SleepPrefix = builder.define("SleepPrefix", "§7[Sleeping]", 0, 32);
+        SleepSuffix = builder.define("SleepSuffix", "", 0, 32);
         builder.pop();
         //#endregion
         //#region Disable AFK

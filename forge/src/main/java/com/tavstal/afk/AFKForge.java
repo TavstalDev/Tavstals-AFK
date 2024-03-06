@@ -1,6 +1,5 @@
 package com.tavstal.afk;
 
-import com.google.common.reflect.Reflection;
 import com.tavstal.afk.platform.ForgePlatformHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +16,5 @@ public class AFKForge {
 		}
         // Use Forge to bootstrap the Common mod.
         MinecraftForge.EVENT_BUS.register(new EventListener());
-        Reflection.initialize(ForgeConfig.class);
     }
 }
