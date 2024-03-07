@@ -48,7 +48,10 @@ public class AFKEvents {
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
             var scoreboard = server.getScoreboard();
             if (scoreboard.getPlayerTeam("sleep") != null)
-                scoreboard.removePlayerFromTeam(EntityUtils.GetName(player), scoreboard.getPlayerTeam("sleep"));
+                try
+                {
+                    scoreboard.removePlayerFromTeam(EntityUtils.GetName(player), scoreboard.getPlayerTeam("sleep"));
+                } catch (Exception ex) { }
 		}
 
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
@@ -233,7 +236,10 @@ public class AFKEvents {
             }
 
             var scoreboard = server.getScoreboard();
-            scoreboard.removePlayerFromTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
+            try
+            {
+                scoreboard.removePlayerFromTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
+            } catch (Exception ex) { }
 
 			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 			if (!worldKey.equals(AFKCommon.GetLastWorldSleepReset()))
