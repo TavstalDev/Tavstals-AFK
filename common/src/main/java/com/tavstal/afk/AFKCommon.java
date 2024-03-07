@@ -115,6 +115,9 @@ public class AFKCommon {
         var uuid = player.getStringUUID();
         var playerName = EntityUtils.GetName(player);
         var data = GetPlayerData(uuid);
+        if (data == null)
+            return;
+
         if (enable) {
             if (!data.IsAFK)
             {
