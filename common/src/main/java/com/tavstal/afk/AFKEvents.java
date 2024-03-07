@@ -46,6 +46,8 @@ public class AFKEvents {
 		if (player.isSleeping()) {
             ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepStopMessage.get(), worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
+            var scoreboard = server.getScoreboard();
+            scoreboard.removePlayerFromTeam(EntityUtils.GetName(player), scoreboard.getPlayerTeam("sleep"));
 		}
 
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
@@ -205,6 +207,9 @@ public class AFKEvents {
                     EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
             }
 
+            var scoreboard = server.getScoreboard();
+            scoreboard.addPlayerToTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
+
 			if (requiredPlayersToReset <= 0)
 			{
                 if (server.getPlayerCount() > 1)
@@ -225,6 +230,9 @@ public class AFKEvents {
                 Constants.LOG.error("OnEntitySleepStopped -> Failed to get the server.");
                 return InteractionResult.PASS;
             }
+
+            var scoreboard = server.getScoreboard();
+            scoreboard.removePlayerFromTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
 
 			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 			if (!worldKey.equals(AFKCommon.GetLastWorldSleepReset()))
