@@ -128,7 +128,7 @@ public class AFKCommon {
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
-                ModUtils.BroadcastMessage(player, AFKConfig.AFKOnMessage.get(), playerName);
+                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOnMessage.get(), playerName);
                 data.IsAFK = true;
             }
 
@@ -149,7 +149,7 @@ public class AFKCommon {
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
 
-                ModUtils.BroadcastMessage(player, AFKConfig.AFKOffMessage.get(), playerName);
+                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOffMessage.get(), playerName);
                 data.IsAFK = false;
             }
 

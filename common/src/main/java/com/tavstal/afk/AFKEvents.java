@@ -44,7 +44,7 @@ public class AFKEvents {
 
 		var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(player));
 		if (player.isSleeping()) {
-            ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepStopMessage.get(), worldKey,
+            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepStopMessage.get(), worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
             var scoreboard = server.getScoreboard();
             if (scoreboard.getPlayerTeam("sleep") != null)
@@ -57,7 +57,7 @@ public class AFKEvents {
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
 		if (requiredPlayersToReset <= 0)
 		{
-            ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepResetMessage.get(), worldKey); 
+            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepResetMessage.get(), worldKey); 
 			AFKCommon.WakeUp(EntityUtils.GetServerLevel(player), server);
 		}
         return InteractionResult.PASS;
@@ -207,17 +207,20 @@ public class AFKEvents {
             int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
             if (server.getPlayerCount() > 1)
             {
-                ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepStartMessage.get(), worldKey, 
+                ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStartMessage.get(), worldKey, 
                     EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
             }
 
-            var scoreboard = server.getScoreboard();
-            scoreboard.addPlayerToTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
+            if (AFKConfig.EnableSleepTab.get())
+            {
+                var scoreboard = server.getScoreboard();
+                scoreboard.addPlayerToTeam(EntityUtils.GetName(entity), scoreboard.getPlayerTeam("sleep"));
+            }
 
 			if (requiredPlayersToReset <= 0)
 			{
                 if (server.getPlayerCount() > 1)
-                    ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepResetMessage.get(), worldKey); 
+                    ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepResetMessage.get(), worldKey); 
 				AFKCommon.WakeUp(EntityUtils.GetServerLevel(entity), server);
 			}
         return InteractionResult.PASS;
@@ -247,7 +250,7 @@ public class AFKEvents {
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.schedule(() -> {
                     if (server.getPlayerCount() > 1)
-                        ModUtils.BroadcastMessageByWorld(entity, AFKConfig.SleepStopMessage.get(), worldKey, EntityUtils.GetName(entity),
+                        ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStopMessage.get(), worldKey, EntityUtils.GetName(entity),
                         MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 				}, 10, TimeUnit.MILLISECONDS);
 			}
