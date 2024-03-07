@@ -47,7 +47,8 @@ public class AFKEvents {
             ModUtils.BroadcastMessageByWorld(player, AFKConfig.SleepStopMessage.get(), worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
             var scoreboard = server.getScoreboard();
-            scoreboard.removePlayerFromTeam(EntityUtils.GetName(player), scoreboard.getPlayerTeam("sleep"));
+            if (scoreboard.getPlayerTeam("sleep") != null)
+                scoreboard.removePlayerFromTeam(EntityUtils.GetName(player), scoreboard.getPlayerTeam("sleep"));
 		}
 
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
