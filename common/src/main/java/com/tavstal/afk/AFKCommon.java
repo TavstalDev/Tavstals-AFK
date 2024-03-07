@@ -65,21 +65,23 @@ public class AFKCommon {
 
         // Create scoreboard team
         var scoreboard = server.getScoreboard();
-		if (scoreboard.getPlayerTeam("afk") == null)
+        PlayerTeam afkTeam = scoreboard.getPlayerTeam("afk");
+		if (afkTeam == null)
 		{
-			PlayerTeam team = scoreboard.addPlayerTeam("afk");
-            team.setPlayerPrefix(ModUtils.Literal(AFKConfig.Prefix.get() + " "));
-            team.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.Suffix.get()));
-            team.setColor(ChatFormatting.WHITE);
+			afkTeam = scoreboard.addPlayerTeam("afk");
 		}
+        afkTeam.setPlayerPrefix(ModUtils.Literal(AFKConfig.Prefix.get() + " "));
+        afkTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.Suffix.get()));
+        afkTeam.setColor(ChatFormatting.WHITE);
 
-        if (scoreboard.getPlayerTeam("sleep") == null) 
+        PlayerTeam sleepTeam = scoreboard.getPlayerTeam("sleep");
+        if (sleepTeam == null) 
         {
-            PlayerTeam team = scoreboard.addPlayerTeam("sleep");
-            team.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
-            team.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
-            team.setColor(ChatFormatting.WHITE);
+            sleepTeam = scoreboard.addPlayerTeam("sleep");
         }
+        sleepTeam.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
+        sleepTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
+        sleepTeam.setColor(ChatFormatting.WHITE);
     }
 
     private static void SetLogLevel(String level) {
