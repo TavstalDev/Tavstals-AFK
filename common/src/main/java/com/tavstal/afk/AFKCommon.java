@@ -88,7 +88,8 @@ public class AFKCommon {
 
         if (AFKConfig.EnableWorldTab.get()) {
             for (var level : server.getAllLevels()) {
-                String levelName = WorldUtils.GetDisplayName(level);
+                String levelName = WorldUtils.GetName(level);
+                String displayLevelName = WorldUtils.GetDisplayName(level);
                 PlayerTeam worldTeam = scoreboard.getPlayerTeam(levelName);
                 if (worldTeam == null) {
                     worldTeam = scoreboard.addPlayerTeam(levelName);
@@ -96,12 +97,12 @@ public class AFKCommon {
                 if (AFKConfig.WorldPrefix.get().isEmpty())
                     worldTeam.setPlayerPrefix(null);
                 else
-                    worldTeam.setPlayerPrefix(ModUtils.Literal(String.format(AFKConfig.WorldPrefix.get() + " ", levelName)));
+                    worldTeam.setPlayerPrefix(ModUtils.Literal(String.format(AFKConfig.WorldPrefix.get() + " ", displayLevelName)));
                 
                 if (AFKConfig.WorldSuffix.get().isEmpty())
                     worldTeam.setPlayerSuffix(null);
                 else
-                    worldTeam.setPlayerSuffix(ModUtils.Literal(String.format(" " + AFKConfig.WorldSuffix.get(), levelName)));
+                    worldTeam.setPlayerSuffix(ModUtils.Literal(String.format(" " + AFKConfig.WorldSuffix.get(), displayLevelName)));
                 worldTeam.setColor(ChatFormatting.WHITE);
             }
         }
