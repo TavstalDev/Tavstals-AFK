@@ -2,11 +2,10 @@ package com.tavstal.afk;
 
 import java.util.concurrent.TimeUnit;
 
-import com.tavstal.afk.utils.WorldUtils;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -71,13 +70,16 @@ public class EventListener {
     @SubscribeEvent
     public void onPlayerChangeWorld(PlayerChangedDimensionEvent event) {
         if (AFKConfig.DisableOnWorldChange.get())
-            AFKEvents.OnPlayerChangesWorld(event.getEntity(), event.getFrom().location().toString(), event.getTo().location().toString());
+        {
+            MinecraftServer server = event.getEntity().getServer();
+            AFKEvents.OnPlayerChangesWorld(event.getEntity(), server.getLevel(event.getFrom()), server.getLevel(event.getTo()));
+        }
     }
 
     @SubscribeEvent
     public void onPlayerRespawned(PlayerRespawnEvent event) {
         if (AFKConfig.DisableOnRespawn.get())
-            AFKEvents.OnPlayerRespawned(event.getEntity());
+            AFKEvents.OnPlayerRespawned(null, event.getEntity());
     }
 
     // Left Click Block

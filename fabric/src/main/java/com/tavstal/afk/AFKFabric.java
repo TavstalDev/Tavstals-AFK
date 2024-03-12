@@ -1,7 +1,6 @@
 package com.tavstal.afk;
 
 import com.tavstal.afk.platform.FabricPlatformHelper;
-import com.tavstal.afk.utils.WorldUtils;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
@@ -88,13 +87,13 @@ public class AFKFabric implements ModInitializer {
 		if (AFKConfig.DisableOnWorldChange.get())
 		{
 			ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> 
-			AFKEvents.OnPlayerChangesWorld(player, WorldUtils.GetName(origin), WorldUtils.GetName(destination)));
+			AFKEvents.OnPlayerChangesWorld(player, origin, destination));
 		}
 
 		// Player Respawned Event
 		if (AFKConfig.DisableOnRespawn.get())
 		{
-			ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> AFKEvents.OnPlayerRespawned(newPlayer));
+			ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> AFKEvents.OnPlayerRespawned(oldPlayer, newPlayer));
 		}
 
 		// Player Chatted Event

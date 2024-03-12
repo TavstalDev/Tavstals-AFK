@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.google.common.reflect.Reflection;
-import com.ibm.icu.text.MessageFormat;
+import com.tavstal.afk.commands.AFKAdminCommand;
 import com.tavstal.afk.commands.AFKCommand;
 import com.tavstal.afk.models.PlayerData;
 import com.tavstal.afk.utils.EntityUtils;
@@ -21,9 +21,9 @@ import com.tavstal.afk.utils.ModUtils;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -63,6 +63,7 @@ public class AFKCommon {
         // Register Commands
         var dispatcher = server.getCommands().getDispatcher();
         AFKCommand.register(dispatcher);
+        AFKAdminCommand.register(dispatcher);
 
         // Create scoreboard team
         var scoreboard = server.getScoreboard();
@@ -84,27 +85,6 @@ public class AFKCommon {
             sleepTeam.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
             sleepTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
             sleepTeam.setColor(ChatFormatting.WHITE);
-        }
-
-        if (AFKConfig.EnableWorldTab.get()) {
-            for (var level : server.getAllLevels()) {
-                String levelName = WorldUtils.GetName(level);
-                String displayLevelName = WorldUtils.GetDisplayName(level);
-                PlayerTeam worldTeam = scoreboard.getPlayerTeam(levelName);
-                if (worldTeam == null) {
-                    worldTeam = scoreboard.addPlayerTeam(levelName);
-                }
-                if (AFKConfig.WorldPrefix.get().isEmpty())
-                    worldTeam.setPlayerPrefix(null);
-                else
-                    worldTeam.setPlayerPrefix(ModUtils.Literal(String.format(AFKConfig.WorldPrefix.get() + " ", displayLevelName)));
-                
-                if (AFKConfig.WorldSuffix.get().isEmpty())
-                    worldTeam.setPlayerSuffix(null);
-                else
-                    worldTeam.setPlayerSuffix(ModUtils.Literal(String.format(" " + AFKConfig.WorldSuffix.get(), displayLevelName)));
-                worldTeam.setColor(ChatFormatting.WHITE);
-            }
         }
     }
 
@@ -151,7 +131,7 @@ public class AFKCommon {
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
-                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOnMessage.get(), playerName);
+                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOnMsg.get(), playerName);
                 data.IsAFK = true;
             }
 
@@ -171,7 +151,7 @@ public class AFKCommon {
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
 
-                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOffMessage.get(), playerName);
+                ModUtils.BroadcastMessage(player, AFKTranslation.AFKOffMsg.get(), playerName);
                 data.IsAFK = false;
             }
 

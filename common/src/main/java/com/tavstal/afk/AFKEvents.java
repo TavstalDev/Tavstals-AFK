@@ -21,24 +21,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.scores.Scoreboard;
 
 public class AFKEvents {
     
     public static InteractionResult OnPlayerConnected(Player player) {
         Constants.LOG.debug("PLAYER_CONNECT was called by {}", EntityUtils.GetName(player));
         AFKCommon.PutPlayerData(player.getStringUUID(), new PlayerData(EntityUtils.GetPosition(player), EntityUtils.GetBlockPosition(player), player.yHeadRot, LocalDateTime.now()));
-        
-        if (AFKConfig.EnableWorldTab.get()) {
-            MinecraftServer server = player.getServer();
-            Scoreboard scoreboard = server.getScoreboard();
-            Level level = EntityUtils.GetLevel(player);
-            String levelName = WorldUtils.GetName(level);
-
-            if (scoreboard.getPlayerTeam(levelName) != null) {
-                PlayerUtils.AddToTeam(player, levelName);
-            }
-        }
         
         return InteractionResult.PASS;
     }
@@ -58,7 +46,7 @@ public class AFKEvents {
 
 		var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(player));
 		if (player.isSleeping()) {
-            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepStopMessage.get(), worldKey,
+            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepStopMsg.get(), worldKey,
             EntityUtils.GetName(player), MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
             PlayerUtils.RemoveFromTeam(player, "sleep");
 		}
@@ -66,15 +54,26 @@ public class AFKEvents {
         int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
 		if (requiredPlayersToReset <= 0)
 		{
-            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepResetMessage.get(), worldKey); 
+            ModUtils.BroadcastMessageByWorld(player, AFKTranslation.SleepResetMsg.get(), worldKey); 
 			AFKCommon.WakeUp(EntityUtils.GetServerLevel(player), server);
 		}
         return InteractionResult.PASS;
     }
 
-    public static InteractionResult OnPlayerRespawned(Player player) {
-        Constants.LOG.debug("AFTER_RESPAWN was called by {}", EntityUtils.GetName(player));
-		AFKCommon.ChangeAFKMode(player, false);
+    public static InteractionResult OnPlayerRespawned(Player oldPlayer, Player newPlayer) {
+        Constants.LOG.debug("AFTER_RESPAWN was called by {}", EntityUtils.GetName(newPlayer));
+		AFKCommon.ChangeAFKMode(newPlayer, false);
+
+        if (oldPlayer != null)
+        {
+            Level oldLevel = EntityUtils.GetLevel(oldPlayer);
+            Level newLevel = EntityUtils.GetLevel(newPlayer);
+
+            if (newLevel.dimension() != oldLevel.dimension()) {
+                PlayerUtils.RemoveFromTeam(newPlayer, WorldUtils.GetName(oldLevel));
+                PlayerUtils.AddToTeam(newPlayer, WorldUtils.GetName(newLevel));
+            }
+        }
         return InteractionResult.PASS;
     }
 
@@ -200,15 +199,9 @@ public class AFKEvents {
         return InteractionResult.PASS;
     }
 
-    public static InteractionResult OnPlayerChangesWorld(Player player, String fromWorldKey, String toWorldKey) {
+    public static InteractionResult OnPlayerChangesWorld(Player player, Level fromLevel, Level toLevel) {
         Constants.LOG.debug("WORLD_CHANGE_2 was called by {}", EntityUtils.GetName(player));
 		AFKCommon.ChangeAFKMode(player, false);
-        
-        if (AFKConfig.EnableWorldTab.get())
-        {
-            PlayerUtils.RemoveFromTeam(player, fromWorldKey);
-            PlayerUtils.AddToTeam(player, toWorldKey);
-        }
 
         return InteractionResult.PASS;
     }
@@ -230,8 +223,8 @@ public class AFKEvents {
             int requiredPlayersToReset = AFKCommon.GetRequiredPlayersToReset(server, worldKey);
             if (server.getPlayerCount() > 1)
             {
-                ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStartMessage.get(), worldKey, 
-                    EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
+                ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStartMsg.get(), worldKey, 
+                EntityUtils.GetName(entity), MathUtils.Clamp(requiredPlayersToReset, 0, server.getMaxPlayers()));
             }
 
             if (AFKConfig.EnableSleepTab.get())
@@ -242,7 +235,7 @@ public class AFKEvents {
 			if (requiredPlayersToReset <= 0)
 			{
                 if (server.getPlayerCount() > 1)
-                    ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepResetMessage.get(), worldKey); 
+                    ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepResetMsg.get(), worldKey); 
 				AFKCommon.WakeUp(EntityUtils.GetServerLevel(entity), server);
 			}
         return InteractionResult.PASS;
@@ -260,10 +253,11 @@ public class AFKEvents {
                 return InteractionResult.PASS;
             }
 
-            try
+            if (AFKConfig.EnableSleepTab.get())
             {
                 PlayerUtils.RemoveFromTeam((Player)entity, "sleep");
-            } catch (Exception ex) { }
+            }
+            
 
 			var worldKey = WorldUtils.GetName(EntityUtils.GetLevel(entity));
 			if (!worldKey.equals(AFKCommon.GetLastWorldSleepReset()))
@@ -271,7 +265,7 @@ public class AFKEvents {
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.schedule(() -> {
                     if (server.getPlayerCount() > 1)
-                        ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStopMessage.get(), worldKey, EntityUtils.GetName(entity),
+                        ModUtils.BroadcastMessageByWorld(entity, AFKTranslation.SleepStopMsg.get(), worldKey, EntityUtils.GetName(entity),
                         MathUtils.Clamp(AFKCommon.GetRequiredPlayersToReset(server, worldKey), 0, server.getMaxPlayers()));
 				}, 10, TimeUnit.MILLISECONDS);
 			}
