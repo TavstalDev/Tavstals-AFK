@@ -123,8 +123,7 @@ public class AFKCommon {
             {
                 var server = player.getServer();
                 if (server != null) {
-                    var scoreboard = server.getScoreboard();
-                    scoreboard.addPlayerToTeam(playerName, scoreboard.getPlayerTeam("afk"));
+                    PlayerUtils.AddToTeam(player, "afk");
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
@@ -143,8 +142,7 @@ public class AFKCommon {
             if (data.IsAFK) {
                 var server = player.getServer();
                 if (server != null) {
-                    var scoreboard = server.getScoreboard();
-                    scoreboard.removePlayerFromTeam(playerName, scoreboard.getPlayerTeam("afk"));
+                    PlayerUtils.RemoveFromTeam(player, "afk");
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
