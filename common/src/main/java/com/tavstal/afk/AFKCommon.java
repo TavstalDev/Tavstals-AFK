@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.google.common.reflect.Reflection;
+import com.ibm.icu.text.MessageFormat;
 import com.tavstal.afk.commands.AFKCommand;
 import com.tavstal.afk.models.PlayerData;
 import com.tavstal.afk.utils.EntityUtils;
@@ -74,14 +75,36 @@ public class AFKCommon {
         afkTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.Suffix.get()));
         afkTeam.setColor(ChatFormatting.WHITE);
 
-        PlayerTeam sleepTeam = scoreboard.getPlayerTeam("sleep");
-        if (sleepTeam == null) 
-        {
-            sleepTeam = scoreboard.addPlayerTeam("sleep");
+        if (AFKConfig.EnableSleepTab.get()) {
+            PlayerTeam sleepTeam = scoreboard.getPlayerTeam("sleep");
+            if (sleepTeam == null) 
+            {
+                sleepTeam = scoreboard.addPlayerTeam("sleep");
+            }
+            sleepTeam.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
+            sleepTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
+            sleepTeam.setColor(ChatFormatting.WHITE);
         }
-        sleepTeam.setPlayerPrefix(ModUtils.Literal(AFKConfig.SleepPrefix.get() + " "));
-        sleepTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
-        sleepTeam.setColor(ChatFormatting.WHITE);
+
+        if (AFKConfig.EnableWorldTab.get()) {
+            for (var level : server.getAllLevels()) {
+                String levelName = WorldUtils.GetDisplayName(level);
+                PlayerTeam worldTeam = scoreboard.getPlayerTeam(levelName);
+                if (worldTeam == null) {
+                    worldTeam = scoreboard.addPlayerTeam(levelName);
+                }
+                if (AFKConfig.WorldPrefix.get().isEmpty())
+                    worldTeam.setPlayerPrefix(null);
+                else
+                    worldTeam.setPlayerPrefix(ModUtils.Literal(String.format(AFKConfig.WorldPrefix.get() + " ", levelName)));
+                
+                if (AFKConfig.WorldSuffix.get().isEmpty())
+                    worldTeam.setPlayerSuffix(null);
+                else
+                    worldTeam.setPlayerSuffix(ModUtils.Literal(String.format(" " + AFKConfig.WorldSuffix.get(), levelName)));
+                worldTeam.setColor(ChatFormatting.WHITE);
+            }
+        }
     }
 
     private static void SetLogLevel(String level) {

@@ -20,12 +20,26 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.Scoreboard;
 
 public class AFKEvents {
     
     public static InteractionResult OnPlayerConnected(Player player) {
         Constants.LOG.debug("PLAYER_CONNECT was called by {}", EntityUtils.GetName(player));
         AFKCommon.PutPlayerData(player.getStringUUID(), new PlayerData(EntityUtils.GetPosition(player), EntityUtils.GetBlockPosition(player), player.yHeadRot, LocalDateTime.now()));
+        
+        if (AFKConfig.EnableWorldTab.get()) {
+            MinecraftServer server = player.getServer();
+            Scoreboard scoreboard = server.getScoreboard();
+            Level level = EntityUtils.GetLevel(player);
+            String levelName = WorldUtils.GetName(level);
+
+            if (scoreboard.getPlayerTeam(levelName) != null) {
+                PlayerUtils.AddToTeam(player, levelName);
+            }
+        }
+        
         return InteractionResult.PASS;
     }
 
@@ -182,6 +196,20 @@ public class AFKEvents {
     public static InteractionResult OnPlayerChangesWorld(Player player, String worldKey) {
         Constants.LOG.debug("WORLD_CHANGE_2 was called by {}", EntityUtils.GetName(player));
 		AFKCommon.ChangeAFKMode(player, false);
+
+        return InteractionResult.PASS;
+    }
+
+    public static InteractionResult OnPlayerChangesWorld(Player player, String fromWorldKey, String toWorldKey) {
+        Constants.LOG.debug("WORLD_CHANGE_2 was called by {}", EntityUtils.GetName(player));
+		AFKCommon.ChangeAFKMode(player, false);
+        
+        if (AFKConfig.EnableWorldTab.get())
+        {
+            PlayerUtils.RemoveFromTeam(player, fromWorldKey);
+            PlayerUtils.AddToTeam(player, toWorldKey);
+        }
+
         return InteractionResult.PASS;
     }
 

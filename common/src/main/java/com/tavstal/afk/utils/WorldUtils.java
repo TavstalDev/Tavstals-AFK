@@ -9,7 +9,15 @@ public class WorldUtils {
       return level.dimension().location().toString();
    } 
 
+   public static String GetDisplayName(ServerLevel level) {
+      return level.dimension().location().getPath();
+   }
+
    public static String GetName(Level level) {
       return level.dimension().location().toString();
    } 
+
+   public static String GetDisplayName(Level level) {
+      return level.dimension().location().getPath();
+   }
 }
