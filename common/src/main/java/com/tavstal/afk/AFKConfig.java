@@ -16,6 +16,10 @@ public class AFKConfig {
     public static final Supplier<String> SleepPrefix;
     public static final Supplier<String> SleepSuffix;
 
+    public static final Supplier<Boolean> EnableWorldTab;
+    public static final Supplier<String> WorldPrefix;
+    public static final Supplier<String> WorldSuffix;
+
     public static final Supplier<Boolean> DisableOnAttackBlock;
     public static final Supplier<Boolean> DisableOnAttackEntity;
     public static final Supplier<Boolean> DisableOnUseBlock;
@@ -40,6 +44,9 @@ public class AFKConfig {
         EnableSleepTab = builder.onlyOnServer().define("EnableSleepTab", true);
         SleepPrefix = builder.define("SleepPrefix", "§7[Sleeping]", 0, 32);
         SleepSuffix = builder.define("SleepSuffix", "", 0, 32);
+        EnableWorldTab = builder.define("EnableWorldTab", true);
+        WorldPrefix = builder.define("WorldPrefix", "", 0, 32);
+        WorldSuffix = builder.define("WorldSuffix", "§2[%s]", 0, 32);
         builder.pop();
         //#endregion
         //#region Disable AFK

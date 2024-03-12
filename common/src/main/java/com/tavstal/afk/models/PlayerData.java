@@ -1,6 +1,7 @@
 package com.tavstal.afk.models;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -13,6 +14,7 @@ public class PlayerData {
     public int TeleportTTL;
     public int ImpulseTTL;
     public LocalDateTime Date;
+    public HashSet<TeamData> Teams;
     //public boolean IsHurt;
 
     public PlayerData(Vec3 lastPosition, BlockPos lastBlockPosition, float headRotation, LocalDateTime date) {
@@ -20,5 +22,6 @@ public class PlayerData {
         LastBlockPosition = lastBlockPosition;
         HeadRotation = headRotation;
         Date = date;
+        Teams = new HashSet<>();
     }
 }

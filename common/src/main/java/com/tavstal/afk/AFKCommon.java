@@ -86,6 +86,30 @@ public class AFKCommon {
             sleepTeam.setPlayerSuffix(ModUtils.Literal(" " + AFKConfig.SleepSuffix.get()));
             sleepTeam.setColor(ChatFormatting.WHITE);
         }
+
+        if (AFKConfig.EnableWorldTab.get()) {
+            for (var level : server.getAllLevels()) {
+                String levelName = WorldUtils.GetDisplayName(level);
+                PlayerTeam worldTeam = scoreboard.getPlayerTeam(levelName);
+                if (worldTeam == null) {
+                    worldTeam = scoreboard.addPlayerTeam(levelName);
+                }
+
+                // Set Prefix
+                if (AFKConfig.WorldPrefix.get().isEmpty())
+                    worldTeam.setPlayerPrefix(null);
+                else
+                    worldTeam.setPlayerPrefix(ModUtils.Literal(String.format(AFKConfig.WorldPrefix.get() + " ", levelName)));
+
+                // Set Suffix
+                if (AFKConfig.WorldSuffix.get().isEmpty())
+                    worldTeam.setPlayerSuffix(null);
+                else
+                    worldTeam.setPlayerSuffix(ModUtils.Literal(String.format(" " + AFKConfig.WorldSuffix.get(), levelName)));
+
+                worldTeam.setColor(ChatFormatting.WHITE);
+            }
+        }
     }
 
     private static void SetLogLevel(String level) {
@@ -127,7 +151,8 @@ public class AFKCommon {
             {
                 var server = player.getServer();
                 if (server != null) {
-                    PlayerUtils.AddToTeam(player, "afk");
+                    //PlayerUtils.AddToTeam(player, "afk");
+                    data.Teams.add(Constants.TEAM_AFK);
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
@@ -140,13 +165,15 @@ public class AFKCommon {
             data.HeadRotation = player.yHeadRot;
             data.Date = LocalDateTime.now();
             PutPlayerData(uuid, data);
+            PlayerUtils.RefreshPlayerTeams(player);
         }
         else
         {
             if (data.IsAFK) {
                 var server = player.getServer();
                 if (server != null) {
-                    PlayerUtils.RemoveFromTeam(player, "afk");
+                    //PlayerUtils.RemoveFromTeam(player, "afk");
+                    data.Teams.remove(Constants.TEAM_AFK);
                 }
                 else
                     Constants.LOG.error("ChangeAFKMode -> Failed to get the server.");
@@ -160,6 +187,7 @@ public class AFKCommon {
             data.HeadRotation = player.yHeadRot;
             data.Date = LocalDateTime.now();
             PutPlayerData(uuid, data);
+            PlayerUtils.RefreshPlayerTeams(player);
         }
     }
 

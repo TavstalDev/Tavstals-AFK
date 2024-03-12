@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import com.tavstal.afk.models.PlayerData;
+import com.tavstal.afk.models.TeamData;
 import com.tavstal.afk.utils.EntityUtils;
 import com.tavstal.afk.utils.PlayerUtils;
 import com.tavstal.afk.utils.WorldUtils;
@@ -28,6 +29,14 @@ public class AFKEvents {
         Constants.LOG.debug("PLAYER_CONNECT was called by {}", EntityUtils.GetName(player));
         AFKCommon.PutPlayerData(player.getStringUUID(), new PlayerData(EntityUtils.GetPosition(player), EntityUtils.GetBlockPosition(player), player.yHeadRot, LocalDateTime.now()));
         
+        PlayerData data = AFKCommon.GetPlayerData(player.getStringUUID());
+        if (data != null)
+        {
+            data.Teams.add(new TeamData(WorldUtils.GetDisplayName(EntityUtils.GetLevel(player)), 0));
+            AFKCommon.PutPlayerData(player.getStringUUID(), data);
+            PlayerUtils.RefreshPlayerTeams(player);
+        }
+
         return InteractionResult.PASS;
     }
 
@@ -64,14 +73,29 @@ public class AFKEvents {
         Constants.LOG.debug("AFTER_RESPAWN was called by {}", EntityUtils.GetName(newPlayer));
 		AFKCommon.ChangeAFKMode(newPlayer, false);
 
-        if (oldPlayer != null)
+        if (AFKConfig.EnableWorldTab.get())
         {
-            Level oldLevel = EntityUtils.GetLevel(oldPlayer);
-            Level newLevel = EntityUtils.GetLevel(newPlayer);
+            if (oldPlayer != null)
+            {
+                Level oldLevel = EntityUtils.GetLevel(oldPlayer);
+                Level newLevel = EntityUtils.GetLevel(newPlayer);
 
-            if (newLevel.dimension() != oldLevel.dimension()) {
-                PlayerUtils.RemoveFromTeam(newPlayer, WorldUtils.GetName(oldLevel));
-                PlayerUtils.AddToTeam(newPlayer, WorldUtils.GetName(newLevel));
+                if (newLevel.dimension() != oldLevel.dimension()) {
+                    
+                    PlayerData data = AFKCommon.GetPlayerData(newPlayer.getStringUUID());
+                    if (data == null)
+                        return InteractionResult.PASS;
+
+                    data.Teams.removeIf((x) -> x.Name == WorldUtils.GetDisplayName(oldLevel));
+                    TeamData worldTeam = new TeamData(WorldUtils.GetDisplayName(newLevel), 0);
+                    if (!data.Teams.contains(worldTeam))
+                    {
+                        data.Teams.add(worldTeam);
+                    }
+                    AFKCommon.PutPlayerData(newPlayer.getStringUUID(), data);
+                    PlayerUtils.RefreshPlayerTeams(newPlayer);
+            
+                }
             }
         }
         return InteractionResult.PASS;
@@ -203,6 +227,22 @@ public class AFKEvents {
         Constants.LOG.debug("WORLD_CHANGE_2 was called by {}", EntityUtils.GetName(player));
 		AFKCommon.ChangeAFKMode(player, false);
 
+        if (AFKConfig.EnableWorldTab.get())
+        {
+            PlayerData data = AFKCommon.GetPlayerData(player.getStringUUID());
+            if (data == null)
+                return InteractionResult.PASS;
+
+            data.Teams.removeIf((x) -> x.Name == WorldUtils.GetDisplayName(fromLevel));
+            TeamData worldTeam = new TeamData(WorldUtils.GetDisplayName(toLevel), 0);
+            if (!data.Teams.contains(worldTeam))
+            {
+                data.Teams.add(worldTeam);
+            }
+            AFKCommon.PutPlayerData(player.getStringUUID(), data);
+            PlayerUtils.RefreshPlayerTeams(player);
+        }
+
         return InteractionResult.PASS;
     }
 
@@ -229,7 +269,17 @@ public class AFKEvents {
 
             if (AFKConfig.EnableSleepTab.get())
             {
-                PlayerUtils.AddToTeam((Player)entity, "sleep");
+                //PlayerUtils.AddToTeam((Player)entity, "sleep");
+                PlayerData data = AFKCommon.GetPlayerData(entity.getStringUUID());
+                if (data != null)
+                {
+                    if (!data.Teams.contains(Constants.TEAM_SLEEP))
+                    {
+                        data.Teams.add(Constants.TEAM_SLEEP);
+                        AFKCommon.PutPlayerData(entity.getStringUUID(), data);
+                        PlayerUtils.RefreshPlayerTeams((Player)entity);
+                    }
+                }
             }
 
 			if (requiredPlayersToReset <= 0)
@@ -255,7 +305,17 @@ public class AFKEvents {
 
             if (AFKConfig.EnableSleepTab.get())
             {
-                PlayerUtils.RemoveFromTeam((Player)entity, "sleep");
+                //PlayerUtils.RemoveFromTeam((Player)entity, "sleep");
+                PlayerData data = AFKCommon.GetPlayerData(entity.getStringUUID());
+                if (data != null)
+                {
+                    if (data.Teams.contains(Constants.TEAM_SLEEP))
+                    {
+                        data.Teams.remove(Constants.TEAM_SLEEP);
+                        AFKCommon.PutPlayerData(entity.getStringUUID(), data);
+                        PlayerUtils.RefreshPlayerTeams((Player)entity);
+                    }
+                }
             }
             
 

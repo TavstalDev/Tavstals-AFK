@@ -1,8 +1,8 @@
 package com.tavstal.afk.utils;
 
 import com.tavstal.afk.AFKCommon;
-import com.tavstal.afk.Constants;
 import com.tavstal.afk.models.PlayerData;
+import com.tavstal.afk.models.TeamData;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
@@ -81,5 +81,29 @@ public class PlayerUtils {
       catch(Exception ex) { 
          return false;
       }
+   }
+
+   public static void RefreshPlayerTeams(Player player) {
+      PlayerData data = AFKCommon.GetPlayerData(player.getStringUUID());
+      if (data == null)
+         return;
+
+      TeamData teamData = null;
+      for (TeamData td : data.Teams) {
+         if (teamData == null)
+         {
+            teamData = td;
+            continue;
+         }
+           
+         if (teamData.Priority < td.Priority) {
+            teamData = td;
+         }
+      }
+
+      if (teamData == null)
+         return;
+
+      AddToTeam(player, teamData.Name);
    }
 }
