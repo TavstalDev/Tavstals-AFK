@@ -2,7 +2,6 @@ package com.tavstal.afk.utils;
 
 import com.tavstal.afk.AFKCommon;
 import com.tavstal.afk.Constants;
-import com.tavstal.afk.models.NameTag;
 import com.tavstal.afk.models.PlayerData;
 
 import net.minecraft.server.MinecraftServer;
@@ -26,45 +25,6 @@ public class PlayerUtils {
          return false;
       
       return data.IsAFK || player.isSleeping();
-   }
-
-   public static void RefreshPlayerName(Player player) {
-      PlayerData playerData = AFKCommon.GetPlayerData(player.getStringUUID());
-
-      NameTag currNameTag = null;
-      String prefixString = "";
-      for (NameTag prefix : playerData.Prefixes) {
-         if (currNameTag == null) {
-            currNameTag = prefix;
-            continue;
-         }
-
-         if (prefix.Priority > currNameTag.Priority)
-            currNameTag = prefix;
-      }
-      if (currNameTag != null) {
-         prefixString = currNameTag.Text;
-      }
-
-      currNameTag = null;
-      String suffixString = "";
-      for (NameTag suffix : playerData.Suffixes) {
-         if (currNameTag == null) {
-            currNameTag = suffix;
-            continue;
-         }
-
-         if (suffix.Priority > currNameTag.Priority)
-            currNameTag = suffix;
-      }
-      if (currNameTag != null) {
-         suffixString = currNameTag.Text;
-      }
-
-      Constants.LOG.info(prefixString + EntityUtils.GetName(player) + suffixString);
-      
-      player.setCustomName(ModUtils.Literal(prefixString + EntityUtils.GetName(player) + suffixString));
-      player.setCustomNameVisible(true);
    }
 
    public static boolean AddToTeam(Player player, String team) {
