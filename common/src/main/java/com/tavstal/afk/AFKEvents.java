@@ -107,6 +107,12 @@ public class AFKEvents {
             //var combatTracker = player.getCombatTracker();
             PlayerData data = AFKCommon.GetPlayerData(uuid);
             
+            if (data == null)
+                continue;
+
+            if (data.LastBlockPosition == null || data.LastPosition == null)
+                continue;
+
             // NOTES
             // HorizontalCollisions do not activate
             // isPushedByFluid is always true
